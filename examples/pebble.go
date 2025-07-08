@@ -11,7 +11,7 @@ import (
 
 	"gobot.io/x/gobot/v2"
 	"gobot.io/x/gobot/v2/pkg/api"
-	"gobot.io/x/gobot/v2/pkg/platforms/pebble"
+	"gobot.io/x/gobot/v2/platforms/pebble"
 )
 
 func main() {

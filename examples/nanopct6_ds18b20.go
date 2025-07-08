@@ -12,8 +12,8 @@ import (
 	"time"
 
 	"gobot.io/x/gobot/v2"
-	"gobot.io/x/gobot/v2/pkg/drivers/onewire"
-	"gobot.io/x/gobot/v2/pkg/platforms/friendlyelec/nanopct6"
+	"gobot.io/x/gobot/v2/drivers/onewire"
+	"gobot.io/x/gobot/v2/platforms/friendlyelec/nanopct6"
 )
 
 // Preparation: see /gobot/system/ONEWIRE.md

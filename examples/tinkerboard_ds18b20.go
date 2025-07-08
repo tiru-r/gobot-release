@@ -12,8 +12,8 @@ import (
 	"time"
 
 	"gobot.io/x/gobot/v2"
-	"gobot.io/x/gobot/v2/pkg/drivers/onewire"
-	"gobot.io/x/gobot/v2/pkg/platforms/asus/tinkerboard"
+	"gobot.io/x/gobot/v2/drivers/onewire"
+	"gobot.io/x/gobot/v2/platforms/asus/tinkerboard"
 )
 
 // Preparation: see /gobot/system/ONEWIRE.md and /gobot/platforms/asus/tinkerboard/README.md

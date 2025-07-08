@@ -10,8 +10,8 @@ import (
 	"fmt"
 
 	"gobot.io/x/gobot/v2"
-	"gobot.io/x/gobot/v2/pkg/drivers/spi"
-	"gobot.io/x/gobot/v2/pkg/platforms/raspi"
+	"gobot.io/x/gobot/v2/drivers/spi"
+	"gobot.io/x/gobot/v2/platforms/raspi"
 )
 
 // this example only works for a 128x64 display

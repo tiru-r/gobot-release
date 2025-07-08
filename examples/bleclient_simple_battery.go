@@ -12,7 +12,7 @@ import (
 
 	"gobot.io/x/gobot/v2"
 	"gobot.io/x/gobot/v2/bluetooth"
-	"gobot.io/x/gobot/v2/pkg/drivers/ble"
+	"gobot.io/x/gobot/v2/drivers/ble"
 )
 
 func main() {

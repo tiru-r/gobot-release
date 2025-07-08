@@ -12,8 +12,8 @@ import (
 	"time"
 
 	"gobot.io/x/gobot/v2"
-	"gobot.io/x/gobot/v2/pkg/drivers/i2c"
-	"gobot.io/x/gobot/v2/pkg/platforms/friendlyelec/nanopct6"
+	"gobot.io/x/gobot/v2/drivers/i2c"
+	"gobot.io/x/gobot/v2/platforms/friendlyelec/nanopct6"
 )
 
 func main() {

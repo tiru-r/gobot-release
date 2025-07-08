@@ -11,8 +11,8 @@ import (
 	"time"
 
 	"gobot.io/x/gobot/v2"
-	"gobot.io/x/gobot/v2/pkg/drivers/serial/megapi"
-	"gobot.io/x/gobot/v2/pkg/platforms/serialport"
+	"gobot.io/x/gobot/v2/drivers/serial/megapi"
+	"gobot.io/x/gobot/v2/platforms/serialport"
 )
 
 func main() {

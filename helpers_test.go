@@ -85,9 +85,9 @@ func newTestRobot(name string) *Robot {
 		work,
 	)
 	r.AddCommand("RobotCommand", func(params map[string]any) any { return nil })
-	r.trap = func(c chan os.Signal) {
+	r.SetTrap(func(c chan os.Signal) {
 		c <- os.Interrupt
-	}
+	})
 
 	return r
 }

@@ -2,78 +2,68 @@ package errors
 
 import (
 	"errors"
+	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
-func TestGobotError(t *testing.T) {
-	err := NewConnectionError("test connection failed", nil)
-	
-	if err.Code != ErrConnectionFailed {
-		t.Errorf("Expected error code %v, got %v", ErrConnectionFailed, err.Code)
-	}
-	
-	expectedMsg := "test connection failed"
-	if err.Error() != expectedMsg {
-		t.Errorf("Expected error message '%s', got '%s'", expectedMsg, err.Error())
-	}
+func TestAppendError(t *testing.T) {
+	t.Run("nil base error", func(t *testing.T) {
+		err1 := errors.New("first error")
+		result := AppendError(nil, err1)
+		require.Equal(t, err1, result)
+	})
+
+	t.Run("nil new error", func(t *testing.T) {
+		err1 := errors.New("first error")
+		result := AppendError(err1, nil)
+		require.Equal(t, err1, result)
+	})
+
+	t.Run("both nil", func(t *testing.T) {
+		result := AppendError(nil, nil)
+		require.Nil(t, result)
+	})
+
+	t.Run("both non-nil", func(t *testing.T) {
+		err1 := errors.New("first error")
+		err2 := errors.New("second error")
+		result := AppendError(err1, err2)
+		
+		require.NotNil(t, result)
+		errorStr := result.Error()
+		require.True(t, strings.Contains(errorStr, "first error"))
+		require.True(t, strings.Contains(errorStr, "second error"))
+	})
+
+	t.Run("multiple appends", func(t *testing.T) {
+		var err error
+		err = AppendError(err, errors.New("error 1"))
+		err = AppendError(err, errors.New("error 2"))
+		err = AppendError(err, errors.New("error 3"))
+		
+		require.NotNil(t, err)
+		errorStr := err.Error()
+		require.True(t, strings.Contains(errorStr, "error 1"))
+		require.True(t, strings.Contains(errorStr, "error 2"))
+		require.True(t, strings.Contains(errorStr, "error 3"))
+	})
 }
 
-func TestGobotErrorWithCause(t *testing.T) {
-	cause := errors.New("underlying error")
-	err := NewConnectionError("connection failed", cause)
-	
-	if err.Unwrap() != cause {
-		t.Error("Expected unwrapped error to be the cause")
-	}
-	
-	expectedMsg := "connection failed: underlying error"
-	if err.Error() != expectedMsg {
-		t.Errorf("Expected error message '%s', got '%s'", expectedMsg, err.Error())
-	}
-}
+func TestAppendErrorf(t *testing.T) {
+	t.Run("nil base error", func(t *testing.T) {
+		result := AppendErrorf(nil, "error %d", 42)
+		require.Equal(t, "error 42", result.Error())
+	})
 
-func TestErrorIs(t *testing.T) {
-	err1 := NewConnectionError("test", nil)
-	err2 := NewConnectionError("another test", nil)
-	err3 := NewDeviceNotFoundError("device")
-	
-	if !errors.Is(err1, err2) {
-		t.Error("Expected errors with same code to match with errors.Is")
-	}
-	
-	if errors.Is(err1, err3) {
-		t.Error("Expected errors with different codes not to match")
-	}
-}
-
-func TestSpecificErrorConstructors(t *testing.T) {
-	tests := []struct {
-		name     string
-		create   func() *GobotError
-		expected ErrorCode
-	}{
-		{"DeviceNotFound", func() *GobotError { return NewDeviceNotFoundError("test") }, ErrDeviceNotFound},
-		{"InvalidPin", func() *GobotError { return NewInvalidPinError(13) }, ErrInvalidPin},
-		{"InvalidPort", func() *GobotError { return NewInvalidPortError("/dev/ttyUSB0") }, ErrInvalidPort},
-		{"InvalidBus", func() *GobotError { return NewInvalidBusError(1) }, ErrInvalidBus},
-		{"InvalidAddress", func() *GobotError { return NewInvalidAddressError(0x48) }, ErrInvalidAddress},
-		{"PermissionDenied", func() *GobotError { return NewPermissionDeniedError("/dev/mem") }, ErrPermissionDenied},
-		{"Timeout", func() *GobotError { return NewTimeoutError("connection") }, ErrTimeout},
-		{"NotSupported", func() *GobotError { return NewNotSupportedError("PWM") }, ErrNotSupported},
-		{"InvalidArgument", func() *GobotError { return NewInvalidArgumentError("frequency") }, ErrInvalidArgument},
-		{"AlreadyStarted", func() *GobotError { return NewAlreadyStartedError("device") }, ErrAlreadyStarted},
-		{"NotStarted", func() *GobotError { return NewNotStartedError("device") }, ErrNotStarted},
-	}
-	
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			err := test.create()
-			if err.Code != test.expected {
-				t.Errorf("Expected error code %v, got %v", test.expected, err.Code)
-			}
-			if err.Error() == "" {
-				t.Error("Expected non-empty error message")
-			}
-		})
-	}
+	t.Run("non-nil base error", func(t *testing.T) {
+		baseErr := errors.New("base error")
+		result := AppendErrorf(baseErr, "formatted error %s", "test")
+		
+		require.NotNil(t, result)
+		errorStr := result.Error()
+		require.True(t, strings.Contains(errorStr, "base error"))
+		require.True(t, strings.Contains(errorStr, "formatted error test"))
+	})
 }

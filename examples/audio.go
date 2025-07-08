@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"gobot.io/x/gobot/v2"
-	"gobot.io/x/gobot/v2/pkg/platforms/audio"
+	"gobot.io/x/gobot/v2/platforms/audio"
 )
 
 func main() {

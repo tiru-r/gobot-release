@@ -8,8 +8,8 @@ package main
 
 import (
 	"gobot.io/x/gobot/v2"
-	"gobot.io/x/gobot/v2/pkg/platforms/keyboard"
-	"gobot.io/x/gobot/v2/pkg/platforms/mqtt"
+	"gobot.io/x/gobot/v2/platforms/keyboard"
+	"gobot.io/x/gobot/v2/platforms/mqtt"
 )
 
 func main() {

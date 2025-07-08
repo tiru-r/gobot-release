@@ -13,13 +13,13 @@ import (
 
 // Common errors
 var (
-	ErrNotSupported       = errors.New("operation not supported on this platform")
-	ErrNotConnected       = errors.New("device not connected")
-	ErrInvalidUUID        = errors.New("invalid UUID format")
+	ErrNotSupported           = errors.New("operation not supported on this platform")
+	ErrNotConnected           = errors.New("device not connected")
+	ErrInvalidUUID            = errors.New("invalid UUID format")
 	ErrCharacteristicNotFound = errors.New("characteristic not found")
-	ErrServiceNotFound    = errors.New("service not found")
-	ErrScanTimeout        = errors.New("scan timeout")
-	ErrConnectionFailed   = errors.New("connection failed")
+	ErrServiceNotFound        = errors.New("service not found")
+	ErrScanTimeout            = errors.New("scan timeout")
+	ErrConnectionFailed       = errors.New("connection failed")
 )
 
 // Address represents a Bluetooth device address
@@ -49,22 +49,22 @@ func NewUUID(s string) (UUID, error) {
 
 // Advertisement represents advertising data
 type Advertisement struct {
-	Address        Address
-	RSSI           int16
-	LocalName      string
-	ServiceUUIDs   []UUID
-	ServiceData    map[UUID][]byte
+	Address          Address
+	RSSI             int16
+	LocalName        string
+	ServiceUUIDs     []UUID
+	ServiceData      map[UUID][]byte
 	ManufacturerData map[uint16][]byte
-	TxPowerLevel   *int8
-	Connectable    bool
+	TxPowerLevel     *int8
+	Connectable      bool
 }
 
 // ConnectionParams defines connection parameters
 type ConnectionParams struct {
-	ConnectionTimeout time.Duration
-	MinInterval       time.Duration
-	MaxInterval       time.Duration
-	SlaveLatency      uint16
+	ConnectionTimeout  time.Duration
+	MinInterval        time.Duration
+	MaxInterval        time.Duration
+	SlaveLatency       uint16
 	SupervisionTimeout time.Duration
 }
 
@@ -81,10 +81,10 @@ func DefaultConnectionParams() ConnectionParams {
 
 // ScanParams defines scanning parameters
 type ScanParams struct {
-	Timeout      time.Duration
-	Interval     time.Duration
-	Window       time.Duration
-	ActiveScan   bool
+	Timeout          time.Duration
+	Interval         time.Duration
+	Window           time.Duration
+	ActiveScan       bool
 	FilterDuplicates bool
 }
 
@@ -101,11 +101,11 @@ func DefaultScanParams() ScanParams {
 
 // AdvertisingParams defines advertising parameters
 type AdvertisingParams struct {
-	Interval    time.Duration
-	Timeout     time.Duration
-	Connectable bool
+	Interval     time.Duration
+	Timeout      time.Duration
+	Connectable  bool
 	Discoverable bool
-	TxPower     *int8
+	TxPower      *int8
 }
 
 // DefaultAdvertisingParams returns default advertising parameters
@@ -254,38 +254,37 @@ func GetManager() (Manager, error) {
 	return getPlatformManager()
 }
 
-
 // Standard UUIDs
 var (
 	// Standard GATT Services
-	UUIDGenericAccess                 = mustParseUUID("1800")
-	UUIDGenericAttribute             = mustParseUUID("1801")
-	UUIDBattery                      = mustParseUUID("180F")
-	UUIDDeviceInformation           = mustParseUUID("180A")
-	UUIDHeartRate                   = mustParseUUID("180D")
-	
+	UUIDGenericAccess     = mustParseUUID("1800")
+	UUIDGenericAttribute  = mustParseUUID("1801")
+	UUIDBattery           = mustParseUUID("180F")
+	UUIDDeviceInformation = mustParseUUID("180A")
+	UUIDHeartRate         = mustParseUUID("180D")
+
 	// Standard GATT Characteristics
-	UUIDDeviceName                  = mustParseUUID("2A00")
-	UUIDAppearance                  = mustParseUUID("2A01")
-	UUIDPeripheralPrivacyFlag       = mustParseUUID("2A02")
-	UUIDReconnectionAddress         = mustParseUUID("2A03")
+	UUIDDeviceName                              = mustParseUUID("2A00")
+	UUIDAppearance                              = mustParseUUID("2A01")
+	UUIDPeripheralPrivacyFlag                   = mustParseUUID("2A02")
+	UUIDReconnectionAddress                     = mustParseUUID("2A03")
 	UUIDPeripheralPreferredConnectionParameters = mustParseUUID("2A04")
-	UUIDBatteryLevel                = mustParseUUID("2A19")
-	UUIDManufacturerNameString      = mustParseUUID("2A29")
-	UUIDModelNumberString           = mustParseUUID("2A24")
-	UUIDSerialNumberString          = mustParseUUID("2A25")
-	UUIDHardwareRevisionString      = mustParseUUID("2A27")
-	UUIDFirmwareRevisionString      = mustParseUUID("2A26")
-	UUIDSoftwareRevisionString      = mustParseUUID("2A28")
-	UUIDSystemID                    = mustParseUUID("2A23")
-	
+	UUIDBatteryLevel                            = mustParseUUID("2A19")
+	UUIDManufacturerNameString                  = mustParseUUID("2A29")
+	UUIDModelNumberString                       = mustParseUUID("2A24")
+	UUIDSerialNumberString                      = mustParseUUID("2A25")
+	UUIDHardwareRevisionString                  = mustParseUUID("2A27")
+	UUIDFirmwareRevisionString                  = mustParseUUID("2A26")
+	UUIDSoftwareRevisionString                  = mustParseUUID("2A28")
+	UUIDSystemID                                = mustParseUUID("2A23")
+
 	// Standard GATT Descriptors
-	UUIDCharacteristicExtendedProperties = mustParseUUID("2900")
-	UUIDCharacteristicUserDescription   = mustParseUUID("2901")
+	UUIDCharacteristicExtendedProperties  = mustParseUUID("2900")
+	UUIDCharacteristicUserDescription     = mustParseUUID("2901")
 	UUIDClientCharacteristicConfiguration = mustParseUUID("2902")
 	UUIDServerCharacteristicConfiguration = mustParseUUID("2903")
-	UUIDCharacteristicPresentationFormat = mustParseUUID("2904")
-	UUIDCharacteristicAggregateFormat   = mustParseUUID("2905")
+	UUIDCharacteristicPresentationFormat  = mustParseUUID("2904")
+	UUIDCharacteristicAggregateFormat     = mustParseUUID("2905")
 )
 
 func mustParseUUID(s string) UUID {
@@ -301,7 +300,7 @@ func mustParseUUID(s string) UUID {
 	default:
 		panic("invalid UUID format: " + s)
 	}
-	
+
 	u, err := NewUUID(fullUUID)
 	if err != nil {
 		panic(err)
@@ -320,12 +319,12 @@ func sprintf(format string, args ...any) string {
 			}
 		}
 		return string([]byte{
-			hexDigitUpper(bytes[0]>>4), hexDigitUpper(bytes[0]&0xF), ':',
-			hexDigitUpper(bytes[1]>>4), hexDigitUpper(bytes[1]&0xF), ':',
-			hexDigitUpper(bytes[2]>>4), hexDigitUpper(bytes[2]&0xF), ':',
-			hexDigitUpper(bytes[3]>>4), hexDigitUpper(bytes[3]&0xF), ':',
-			hexDigitUpper(bytes[4]>>4), hexDigitUpper(bytes[4]&0xF), ':',
-			hexDigitUpper(bytes[5]>>4), hexDigitUpper(bytes[5]&0xF),
+			hexDigitUpper(bytes[0] >> 4), hexDigitUpper(bytes[0] & 0xF), ':',
+			hexDigitUpper(bytes[1] >> 4), hexDigitUpper(bytes[1] & 0xF), ':',
+			hexDigitUpper(bytes[2] >> 4), hexDigitUpper(bytes[2] & 0xF), ':',
+			hexDigitUpper(bytes[3] >> 4), hexDigitUpper(bytes[3] & 0xF), ':',
+			hexDigitUpper(bytes[4] >> 4), hexDigitUpper(bytes[4] & 0xF), ':',
+			hexDigitUpper(bytes[5] >> 4), hexDigitUpper(bytes[5] & 0xF),
 		})
 	}
 	return ""

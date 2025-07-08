@@ -65,28 +65,28 @@ int nordic_unsubscribe_characteristic(uint16_t conn_handle, uint16_t char_handle
 
 // GATT Server functions
 int nordic_add_service(uint8_t *service_uuid, uint8_t uuid_type, uint16_t *service_handle);
-int nordic_add_characteristic(uint16_t service_handle, uint8_t *char_uuid, uint8_t uuid_type, 
-                              uint8_t properties, uint8_t *initial_value, uint16_t value_len, 
+int nordic_add_characteristic(uint16_t service_handle, uint8_t *char_uuid, uint8_t uuid_type,
+                              uint8_t properties, uint8_t *initial_value, uint16_t value_len,
                               uint16_t *char_handle);
 int nordic_update_characteristic_value(uint16_t char_handle, uint8_t *data, uint16_t len);
 int nordic_notify_characteristic(uint16_t conn_handle, uint16_t char_handle, uint8_t *data, uint16_t len);
 
 // Callback function types
-typedef void (*nordic_scan_callback_t)(uint8_t *addr, uint8_t addr_type, int8_t rssi, 
+typedef void (*nordic_scan_callback_t)(uint8_t *addr, uint8_t addr_type, int8_t rssi,
                                         uint8_t *adv_data, uint16_t adv_len);
 typedef void (*nordic_connect_callback_t)(uint16_t conn_handle, uint8_t *peer_addr);
 typedef void (*nordic_disconnect_callback_t)(uint16_t conn_handle, uint8_t reason);
-typedef void (*nordic_service_discovered_callback_t)(uint16_t conn_handle, uint16_t service_handle, 
+typedef void (*nordic_service_discovered_callback_t)(uint16_t conn_handle, uint16_t service_handle,
                                                       uint8_t *service_uuid);
 typedef void (*nordic_characteristic_discovered_callback_t)(uint16_t conn_handle, uint16_t service_handle,
-                                                             uint16_t char_handle, uint8_t *char_uuid, 
+                                                             uint16_t char_handle, uint8_t *char_uuid,
                                                              uint8_t properties);
-typedef void (*nordic_read_callback_t)(uint16_t conn_handle, uint16_t char_handle, 
+typedef void (*nordic_read_callback_t)(uint16_t conn_handle, uint16_t char_handle,
                                         uint8_t *data, uint16_t len);
 typedef void (*nordic_write_callback_t)(uint16_t conn_handle, uint16_t char_handle, uint8_t status);
-typedef void (*nordic_notification_callback_t)(uint16_t conn_handle, uint16_t char_handle, 
+typedef void (*nordic_notification_callback_t)(uint16_t conn_handle, uint16_t char_handle,
                                                 uint8_t *data, uint16_t len);
-typedef void (*nordic_write_request_callback_t)(uint16_t conn_handle, uint16_t char_handle, 
+typedef void (*nordic_write_request_callback_t)(uint16_t conn_handle, uint16_t char_handle,
                                                  uint8_t *data, uint16_t len);
 
 // Global callback pointers
@@ -139,31 +139,31 @@ type nordicAdapter struct {
 
 // nordicCentral implements Central for Nordic SoftDevice
 type nordicCentral struct {
-	adapter     *nordicAdapter
-	scanning    bool
-	devices     map[uint16]*nordicDevice // keyed by connection handle
+	adapter      *nordicAdapter
+	scanning     bool
+	devices      map[uint16]*nordicDevice // keyed by connection handle
 	scanCallback func(Advertisement)
-	mu          sync.RWMutex
+	mu           sync.RWMutex
 }
 
 // nordicPeripheral implements Peripheral for Nordic SoftDevice
 type nordicPeripheral struct {
-	adapter      *nordicAdapter
-	advertising  bool
-	services     map[uint16]*nordicPeripheralService // keyed by service handle
-	connections  map[uint16]*nordicConnection        // keyed by connection handle
-	mu           sync.RWMutex
+	adapter     *nordicAdapter
+	advertising bool
+	services    map[uint16]*nordicPeripheralService // keyed by service handle
+	connections map[uint16]*nordicConnection        // keyed by connection handle
+	mu          sync.RWMutex
 }
 
 // nordicDevice implements Device for Nordic SoftDevice
 type nordicDevice struct {
-	central       *nordicCentral
-	connHandle    uint16
-	address       Address
-	name          string
-	connected     bool
-	services      map[uint16]*nordicService // keyed by service handle
-	mu            sync.RWMutex
+	central    *nordicCentral
+	connHandle uint16
+	address    Address
+	name       string
+	connected  bool
+	services   map[uint16]*nordicService // keyed by service handle
+	mu         sync.RWMutex
 }
 
 // nordicService implements Service for Nordic SoftDevice
@@ -248,12 +248,12 @@ func getPlatformManager() (Manager, error) {
 
 	manager := &nordicManager{}
 	adapter := &nordicAdapter{manager: manager}
-	
+
 	adapter.central = &nordicCentral{
 		adapter: adapter,
 		devices: make(map[uint16]*nordicDevice),
 	}
-	
+
 	adapter.peripheral = &nordicPeripheral{
 		adapter:     adapter,
 		services:    make(map[uint16]*nordicPeripheralService),
@@ -437,9 +437,10 @@ func (c *nordicCentral) ConnectedDevices() []Device {
 }
 
 // C callback bridge functions
+//
 //export nordic_scan_callback_bridge
-func nordic_scan_callback_bridge(addr *C.uint8_t, addrType C.uint8_t, rssi C.int8_t, 
-                                 advData *C.uint8_t, advLen C.uint16_t) {
+func nordic_scan_callback_bridge(addr *C.uint8_t, addrType C.uint8_t, rssi C.int8_t,
+	advData *C.uint8_t, advLen C.uint16_t) {
 	globalMutex.RLock()
 	manager := globalNordicManager
 	globalMutex.RUnlock()
@@ -528,7 +529,7 @@ func nordic_disconnect_callback_bridge(connHandle C.uint16_t, reason C.uint8_t) 
 
 // Additional callback bridges would be implemented for:
 // - nordic_service_discovered_callback_bridge
-// - nordic_characteristic_discovered_callback_bridge  
+// - nordic_characteristic_discovered_callback_bridge
 // - nordic_read_callback_bridge
 // - nordic_write_callback_bridge
 // - nordic_notification_callback_bridge

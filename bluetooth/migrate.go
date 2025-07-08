@@ -2,7 +2,7 @@ package bluetooth
 
 import (
 	"time"
-	
+
 	"gobot.io/x/gobot/v2"
 )
 
@@ -28,12 +28,12 @@ func ConvertLegacyOptions(opts ...LegacyClientAdaptorOption) []ClientAdaptorOpti
 // NewLegacyAdaptor creates an adaptor with legacy option support
 func NewLegacyAdaptor(identifier string, legacyOpts ...LegacyClientAdaptorOption) gobot.BLEConnector {
 	adaptor := NewClientAdaptor(identifier)
-	
+
 	// Apply legacy options
 	for _, opt := range legacyOpts {
 		opt(adaptor)
 	}
-	
+
 	return adaptor
 }
 

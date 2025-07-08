@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"gobot.io/x/gobot/v2"
-	"gobot.io/x/gobot/v2/pkg/platforms/parrot/ardrone"
+	"gobot.io/x/gobot/v2/platforms/parrot/ardrone"
 )
 
 func main() {

@@ -26,7 +26,7 @@ import (
 	"fmt"
 
 	"gobot.io/x/gobot/v2"
-	"gobot.io/x/gobot/v2/pkg/platforms/parrot/bebop"
+	"gobot.io/x/gobot/v2/platforms/parrot/bebop"
 )
 
 func main() {

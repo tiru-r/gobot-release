@@ -13,7 +13,7 @@ import (
 
 	"github.com/nats-io/nats.go/jetstream"
 	"gobot.io/x/gobot/v2"
-	"gobot.io/x/gobot/v2/pkg/platforms/nats"
+	"gobot.io/x/gobot/v2/platforms/nats"
 )
 
 func main() {

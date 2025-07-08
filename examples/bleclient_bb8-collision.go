@@ -20,8 +20,8 @@ import (
 	"os"
 
 	"gobot.io/x/gobot/v2"
-	"gobot.io/x/gobot/v2/pkg/drivers/ble/sphero"
-	"gobot.io/x/gobot/v2/pkg/platforms/bleclient"
+	"gobot.io/x/gobot/v2/drivers/ble/sphero"
+	"gobot.io/x/gobot/v2/platforms/bleclient"
 )
 
 func main() {

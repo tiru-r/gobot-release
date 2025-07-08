@@ -78,11 +78,11 @@ func (cm *ConnectionManager) connectWithRetry(ctx context.Context) error {
 			cm.device = device
 			cm.connected = true
 			cm.reconnectAttempts = 0
-			
+
 			if cm.onConnected != nil {
 				go cm.onConnected(device)
 			}
-			
+
 			// Start monitoring connection
 			go cm.monitorConnection(ctx)
 			return nil
@@ -92,7 +92,7 @@ func (cm *ConnectionManager) connectWithRetry(ctx context.Context) error {
 			if cm.onError != nil {
 				go cm.onError(fmt.Errorf("connection attempt %d failed: %w", attempt+1, err))
 			}
-			
+
 			select {
 			case <-ctx.Done():
 				return ctx.Err()
@@ -127,7 +127,7 @@ func (cm *ConnectionManager) monitorConnection(ctx context.Context) {
 					if cm.onDisconnected != nil {
 						go cm.onDisconnected()
 					}
-					
+
 					// Attempt reconnection
 					go func() {
 						cm.mu.Lock()
@@ -164,7 +164,7 @@ func (cm *ConnectionManager) Disconnect(ctx context.Context) error {
 	defer cm.mu.Unlock()
 
 	close(cm.stopCh)
-	
+
 	if cm.device != nil && cm.connected {
 		err := cm.device.Disconnect(ctx)
 		cm.connected = false
@@ -176,11 +176,11 @@ func (cm *ConnectionManager) Disconnect(ctx context.Context) error {
 
 // ExampleScanner demonstrates device scanning with filtering
 type ExampleScanner struct {
-	manager     *SimpleManager
-	devices     map[string]*ScannedDevice
-	nameFilter  string
-	rssiFilter  int
-	mu          sync.RWMutex
+	manager       *SimpleManager
+	devices       map[string]*ScannedDevice
+	nameFilter    string
+	rssiFilter    int
+	mu            sync.RWMutex
 	onDeviceFound func(*ScannedDevice)
 }
 
@@ -200,8 +200,8 @@ func NewExampleScanner() (*ExampleScanner, error) {
 	}
 
 	return &ExampleScanner{
-		manager: manager,
-		devices: make(map[string]*ScannedDevice),
+		manager:    manager,
+		devices:    make(map[string]*ScannedDevice),
 		rssiFilter: -100, // Accept all by default
 	}, nil
 }
@@ -245,7 +245,7 @@ func (es *ExampleScanner) handleDeviceFound(address, name string, rssi int) {
 	}
 
 	now := time.Now()
-	
+
 	if device, exists := es.devices[address]; exists {
 		device.LastSeen = now
 		device.RSSI = rssi
@@ -261,7 +261,7 @@ func (es *ExampleScanner) handleDeviceFound(address, name string, rssi int) {
 			LastSeen:  now,
 		}
 		es.devices[address] = device
-		
+
 		if es.onDeviceFound != nil {
 			go es.onDeviceFound(device)
 		}
@@ -354,7 +354,7 @@ func (eps *ExamplePeripheralServer) IsRunning() bool {
 // ExampleHeartRateMonitor demonstrates connecting to and reading from a heart rate monitor
 func ExampleHeartRateMonitor() {
 	ctx := context.Background()
-	
+
 	// Create connection manager
 	cm, err := NewConnectionManager("12:34:56:78:9A:BC") // Replace with actual device address
 	if err != nil {
@@ -366,7 +366,7 @@ func ExampleHeartRateMonitor() {
 	cm.SetCallbacks(
 		func(device *SimpleDevice) {
 			log.Printf("Connected to heart rate monitor: %s", device.Name())
-			
+
 			// Discover services
 			if err := device.DiscoverServices(ctx); err != nil {
 				log.Printf("Failed to discover services: %v", err)
@@ -404,7 +404,7 @@ func ExampleHeartRateMonitor() {
 // ExampleDeviceScanner demonstrates device scanning with filtering
 func ExampleDeviceScanner() {
 	ctx := context.Background()
-	
+
 	scanner, err := NewExampleScanner()
 	if err != nil {
 		log.Fatal("Failed to create scanner:", err)
@@ -415,7 +415,7 @@ func ExampleDeviceScanner() {
 
 	// Set up device found callback
 	scanner.SetDeviceFoundCallback(func(device *ScannedDevice) {
-		log.Printf("Found device: %s (%s) RSSI: %d dBm", 
+		log.Printf("Found device: %s (%s) RSSI: %d dBm",
 			device.Name, device.Address, device.RSSI)
 	})
 
@@ -428,7 +428,7 @@ func ExampleDeviceScanner() {
 	devices := scanner.GetDiscoveredDevices()
 	log.Printf("Discovered %d devices", len(devices))
 	for _, device := range devices {
-		log.Printf("  - %s (%s) RSSI: %d dBm", 
+		log.Printf("  - %s (%s) RSSI: %d dBm",
 			device.Name, device.Address, device.RSSI)
 	}
 }
@@ -436,7 +436,7 @@ func ExampleDeviceScanner() {
 // ExamplePeripheralService demonstrates creating a BLE peripheral service
 func ExamplePeripheralService() {
 	ctx := context.Background()
-	
+
 	server, err := NewExamplePeripheralServer(
 		"Gobot Device",
 		"12345678-1234-1234-1234-123456789ABC",
@@ -454,7 +454,7 @@ func ExamplePeripheralService() {
 
 	log.Println("BLE peripheral server is running...")
 	log.Println("Advertising as 'Gobot Device'")
-	
+
 	// Keep running
 	time.Sleep(60 * time.Second)
 }

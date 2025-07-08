@@ -8,41 +8,41 @@ import (
 
 func TestParseAddressString(t *testing.T) {
 	tests := []struct {
-		name    string
-		input   string
-		wantErr bool
+		name     string
+		input    string
+		wantErr  bool
 		expected Address
 	}{
 		{
-			name: "valid address uppercase",
-			input: "12:34:56:78:9A:BC",
-			wantErr: false,
+			name:     "valid address uppercase",
+			input:    "12:34:56:78:9A:BC",
+			wantErr:  false,
 			expected: Address{MAC: [6]byte{0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC}},
 		},
 		{
-			name: "valid address lowercase",
-			input: "12:34:56:78:9a:bc",
-			wantErr: false,
+			name:     "valid address lowercase",
+			input:    "12:34:56:78:9a:bc",
+			wantErr:  false,
 			expected: Address{MAC: [6]byte{0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC}},
 		},
 		{
-			name: "invalid length",
-			input: "12:34:56",
+			name:    "invalid length",
+			input:   "12:34:56",
 			wantErr: true,
 		},
 		{
-			name: "invalid format",
-			input: "12-34-56-78-9A-BC",
+			name:    "invalid format",
+			input:   "12-34-56-78-9A-BC",
 			wantErr: true,
 		},
 		{
-			name: "invalid hex",
-			input: "GG:34:56:78:9A:BC",
+			name:    "invalid hex",
+			input:   "GG:34:56:78:9A:BC",
 			wantErr: true,
 		},
 		{
-			name: "empty string",
-			input: "",
+			name:    "empty string",
+			input:   "",
 			wantErr: true,
 		},
 	}
@@ -70,11 +70,11 @@ type mockSimpleManager struct {
 
 func newMockSimpleManager() *mockSimpleManager {
 	adapter := &mockAdapter{
-		name: "Mock Adapter",
+		name:    "Mock Adapter",
 		address: Address{MAC: [6]byte{0x11, 0x22, 0x33, 0x44, 0x55, 0x66}},
 		powered: true,
 	}
-	
+
 	central := &mockCentral{
 		adapter: adapter,
 		enabled: true,
@@ -95,7 +95,7 @@ func newMockSimpleManager() *mockSimpleManager {
 func TestSimpleManagerBasics(t *testing.T) {
 	// Test with mock implementations
 	mockMgr := newMockSimpleManager()
-	
+
 	// Create a SimpleManager manually for testing
 	sm := &SimpleManager{
 		manager: mockMgr.manager,
@@ -236,8 +236,8 @@ func TestSimpleManagerAdvertising(t *testing.T) {
 func TestSimpleDeviceOperations(t *testing.T) {
 	// Create a mock device
 	mockDev := &mockDevice{
-		address: Address{MAC: [6]byte{0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC}},
-		name: "Test Device",
+		address:   Address{MAC: [6]byte{0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC}},
+		name:      "Test Device",
 		connected: true,
 	}
 
@@ -286,13 +286,13 @@ type mockPeripheral struct {
 	services    []PeripheralService
 }
 
-func (p *mockPeripheral) Enable(ctx context.Context) error { return nil }
+func (p *mockPeripheral) Enable(ctx context.Context) error  { return nil }
 func (p *mockPeripheral) Disable(ctx context.Context) error { return nil }
 func (p *mockPeripheral) AddService(uuid UUID, primary bool) (PeripheralService, error) {
 	service := &mockPeripheralService{
 		peripheral: p,
-		uuid: uuid,
-		primary: primary,
+		uuid:       uuid,
+		primary:    primary,
 	}
 	p.services = append(p.services, service)
 	return service, nil
@@ -314,8 +314,8 @@ func (p *mockPeripheral) StopAdvertising(ctx context.Context) error {
 	p.advertising = false
 	return nil
 }
-func (p *mockPeripheral) IsAdvertising() bool { return p.advertising }
-func (p *mockPeripheral) OnConnect(callback func(Device)) {}
+func (p *mockPeripheral) IsAdvertising() bool                { return p.advertising }
+func (p *mockPeripheral) OnConnect(callback func(Device))    {}
 func (p *mockPeripheral) OnDisconnect(callback func(Device)) {}
 
 type mockPeripheralService struct {
@@ -325,14 +325,14 @@ type mockPeripheralService struct {
 	characteristics []PeripheralCharacteristic
 }
 
-func (s *mockPeripheralService) UUID() UUID { return s.uuid }
+func (s *mockPeripheralService) UUID() UUID    { return s.uuid }
 func (s *mockPeripheralService) Primary() bool { return s.primary }
 func (s *mockPeripheralService) AddCharacteristic(uuid UUID, properties CharacteristicProperty, value []byte) (PeripheralCharacteristic, error) {
 	char := &mockPeripheralCharacteristic{
-		service: s,
-		uuid: uuid,
+		service:    s,
+		uuid:       uuid,
 		properties: properties,
-		value: value,
+		value:      value,
 	}
 	s.characteristics = append(s.characteristics, char)
 	return char, nil
@@ -345,7 +345,9 @@ func (s *mockPeripheralService) GetCharacteristic(uuid UUID) (PeripheralCharacte
 	}
 	return nil, ErrCharacteristicNotFound
 }
-func (s *mockPeripheralService) Characteristics() []PeripheralCharacteristic { return s.characteristics }
+func (s *mockPeripheralService) Characteristics() []PeripheralCharacteristic {
+	return s.characteristics
+}
 
 type mockPeripheralCharacteristic struct {
 	service       *mockPeripheralService
@@ -358,12 +360,12 @@ type mockPeripheralCharacteristic struct {
 	onUnsubscribe func()
 }
 
-func (c *mockPeripheralCharacteristic) UUID() UUID { return c.uuid }
-func (c *mockPeripheralCharacteristic) Properties() CharacteristicProperty { return c.properties }
-func (c *mockPeripheralCharacteristic) Value() []byte { return c.value }
-func (c *mockPeripheralCharacteristic) SetValue(data []byte) error { c.value = data; return nil }
+func (c *mockPeripheralCharacteristic) UUID() UUID                          { return c.uuid }
+func (c *mockPeripheralCharacteristic) Properties() CharacteristicProperty  { return c.properties }
+func (c *mockPeripheralCharacteristic) Value() []byte                       { return c.value }
+func (c *mockPeripheralCharacteristic) SetValue(data []byte) error          { c.value = data; return nil }
 func (c *mockPeripheralCharacteristic) NotifySubscribers(data []byte) error { return nil }
-func (c *mockPeripheralCharacteristic) OnRead(callback func() []byte) { c.onRead = callback }
+func (c *mockPeripheralCharacteristic) OnRead(callback func() []byte)       { c.onRead = callback }
 func (c *mockPeripheralCharacteristic) OnWrite(callback func([]byte) error) { c.onWrite = callback }
-func (c *mockPeripheralCharacteristic) OnSubscribe(callback func()) { c.onSubscribe = callback }
-func (c *mockPeripheralCharacteristic) OnUnsubscribe(callback func()) { c.onUnsubscribe = callback }
+func (c *mockPeripheralCharacteristic) OnSubscribe(callback func())         { c.onSubscribe = callback }
+func (c *mockPeripheralCharacteristic) OnUnsubscribe(callback func())       { c.onUnsubscribe = callback }

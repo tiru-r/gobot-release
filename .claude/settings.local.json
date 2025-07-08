@@ -24,7 +24,11 @@
       "Bash(git checkout:*)",
       "mcp__ide__getDiagnostics",
       "Bash(rg:*)",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "Bash(touch:*)",
+      "Bash(GOOS=windows go build -v ./...)",
+      "Bash(GOOS=darwin go build -v ./...)",
+      "Bash(/dev/null)"
     ],
     "deny": []
   }

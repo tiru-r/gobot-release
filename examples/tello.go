@@ -20,7 +20,7 @@ import (
 	"time"
 
 	"gobot.io/x/gobot/v2"
-	"gobot.io/x/gobot/v2/pkg/platforms/dji/tello"
+	"gobot.io/x/gobot/v2/platforms/dji/tello"
 )
 
 func main() {

@@ -18,8 +18,8 @@ import (
 	"os"
 
 	"gobot.io/x/gobot/v2"
-	"gobot.io/x/gobot/v2/pkg/drivers/i2c"
-	"gobot.io/x/gobot/v2/pkg/platforms/firmata"
+	"gobot.io/x/gobot/v2/drivers/i2c"
+	"gobot.io/x/gobot/v2/platforms/firmata"
 )
 
 func main() {

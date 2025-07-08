@@ -164,43 +164,45 @@ func (m *mockManager) Adapters() ([]Adapter, error) {
 	return m.adapters, nil
 }
 
-func (m *mockManager) OnAdapterAdded(callback func(Adapter)) {}
+func (m *mockManager) OnAdapterAdded(callback func(Adapter))   {}
 func (m *mockManager) OnAdapterRemoved(callback func(Adapter)) {}
 
 type mockAdapter struct {
-	name      string
-	address   Address
-	powered   bool
-	central   Central
+	name       string
+	address    Address
+	powered    bool
+	central    Central
 	peripheral Peripheral
 }
 
-func (a *mockAdapter) Central() Central { return a.central }
-func (a *mockAdapter) Peripheral() Peripheral { return a.peripheral }
-func (a *mockAdapter) Address() Address { return a.address }
-func (a *mockAdapter) Name() string { return a.name }
-func (a *mockAdapter) SetName(name string) error { a.name = name; return nil }
-func (a *mockAdapter) PowerState() bool { return a.powered }
+func (a *mockAdapter) Central() Central                 { return a.central }
+func (a *mockAdapter) Peripheral() Peripheral           { return a.peripheral }
+func (a *mockAdapter) Address() Address                 { return a.address }
+func (a *mockAdapter) Name() string                     { return a.name }
+func (a *mockAdapter) SetName(name string) error        { a.name = name; return nil }
+func (a *mockAdapter) PowerState() bool                 { return a.powered }
 func (a *mockAdapter) SetPowerState(enabled bool) error { a.powered = enabled; return nil }
 
 type mockCentral struct {
-	adapter   *mockAdapter
-	enabled   bool
-	scanning  bool
-	devices   []Device
+	adapter  *mockAdapter
+	enabled  bool
+	scanning bool
+	devices  []Device
 }
 
-func (c *mockCentral) Enable(ctx context.Context) error { c.enabled = true; return nil }
+func (c *mockCentral) Enable(ctx context.Context) error  { c.enabled = true; return nil }
 func (c *mockCentral) Disable(ctx context.Context) error { c.enabled = false; return nil }
 func (c *mockCentral) Scan(ctx context.Context, params ScanParams, callback func(Advertisement)) error {
-	if !c.enabled { return ErrNotSupported }
+	if !c.enabled {
+		return ErrNotSupported
+	}
 	c.scanning = true
 	// Simulate finding a device
 	go func() {
 		time.Sleep(100 * time.Millisecond)
 		callback(Advertisement{
-			Address: Address{MAC: [6]byte{0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC}},
-			RSSI: -60,
+			Address:   Address{MAC: [6]byte{0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC}},
+			RSSI:      -60,
 			LocalName: "Test Device",
 		})
 	}()
@@ -208,11 +210,13 @@ func (c *mockCentral) Scan(ctx context.Context, params ScanParams, callback func
 }
 func (c *mockCentral) StopScan(ctx context.Context) error { c.scanning = false; return nil }
 func (c *mockCentral) Connect(ctx context.Context, address Address, params ConnectionParams) (Device, error) {
-	if !c.enabled { return nil, ErrNotSupported }
+	if !c.enabled {
+		return nil, ErrNotSupported
+	}
 	device := &mockDevice{
-		central: c,
-		address: address,
-		name: "Test Device",
+		central:   c,
+		address:   address,
+		name:      "Test Device",
 		connected: true,
 	}
 	c.devices = append(c.devices, device)
@@ -229,12 +233,12 @@ type mockDevice struct {
 	mtu       uint16
 }
 
-func (d *mockDevice) Address() Address { return d.address }
-func (d *mockDevice) Name() string { return d.name }
-func (d *mockDevice) RSSI() int16 { return -60 }
-func (d *mockDevice) Connected() bool { return d.connected }
+func (d *mockDevice) Address() Address                     { return d.address }
+func (d *mockDevice) Name() string                         { return d.name }
+func (d *mockDevice) RSSI() int16                          { return -60 }
+func (d *mockDevice) Connected() bool                      { return d.connected }
 func (d *mockDevice) Disconnect(ctx context.Context) error { d.connected = false; return nil }
-func (d *mockDevice) Services() []Service { return d.services }
+func (d *mockDevice) Services() []Service                  { return d.services }
 func (d *mockDevice) GetService(uuid UUID) (Service, error) {
 	for _, service := range d.services {
 		if service.UUID() == uuid {
@@ -244,15 +248,15 @@ func (d *mockDevice) GetService(uuid UUID) (Service, error) {
 	return nil, ErrServiceNotFound
 }
 func (d *mockDevice) DiscoverServices(ctx context.Context, uuids []UUID) error { return nil }
-func (d *mockDevice) RequestMTU(ctx context.Context, mtu uint16) error { d.mtu = mtu; return nil }
-func (d *mockDevice) GetMTU() uint16 { return d.mtu }
+func (d *mockDevice) RequestMTU(ctx context.Context, mtu uint16) error         { d.mtu = mtu; return nil }
+func (d *mockDevice) GetMTU() uint16                                           { return d.mtu }
 
 func TestMockAdapter(t *testing.T) {
 	adapter := &mockAdapter{
-		name: "Test Adapter",
+		name:    "Test Adapter",
 		address: Address{MAC: [6]byte{0x11, 0x22, 0x33, 0x44, 0x55, 0x66}},
 	}
-	
+
 	central := &mockCentral{adapter: adapter}
 	adapter.central = central
 
@@ -276,7 +280,7 @@ func TestMockAdapter(t *testing.T) {
 
 	// Test central methods
 	ctx := context.Background()
-	
+
 	err = central.Enable(ctx)
 	if err != nil {
 		t.Errorf("Failed to enable central: %v", err)

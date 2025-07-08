@@ -16,21 +16,21 @@ import (
 )
 
 const (
-	bluezService      = "org.bluez"
-	bluezObjectPath   = "/org/bluez"
-	adapterInterface  = "org.bluez.Adapter1"
-	deviceInterface   = "org.bluez.Device1"
-	gattServiceInterface = "org.bluez.GattService1"
-	gattCharInterface = "org.bluez.GattCharacteristic1"
-	gattDescInterface = "org.bluez.GattDescriptor1"
-	agentManagerInterface = "org.bluez.AgentManager1"
+	bluezService            = "org.bluez"
+	bluezObjectPath         = "/org/bluez"
+	adapterInterface        = "org.bluez.Adapter1"
+	deviceInterface         = "org.bluez.Device1"
+	gattServiceInterface    = "org.bluez.GattService1"
+	gattCharInterface       = "org.bluez.GattCharacteristic1"
+	gattDescInterface       = "org.bluez.GattDescriptor1"
+	agentManagerInterface   = "org.bluez.AgentManager1"
 	profileManagerInterface = "org.bluez.ProfileManager1"
 )
 
 // linuxManager implements Manager for Linux using BlueZ
 type linuxManager struct {
-	conn    *dbus.Conn
-	mu      sync.RWMutex
+	conn     *dbus.Conn
+	mu       sync.RWMutex
 	adapters map[dbus.ObjectPath]*linuxAdapter
 }
 
@@ -46,18 +46,18 @@ type linuxAdapter struct {
 
 // linuxCentral implements Central for Linux
 type linuxCentral struct {
-	adapter   *linuxAdapter
-	scanning  bool
-	devices   map[dbus.ObjectPath]*linuxDevice
-	mu        sync.RWMutex
+	adapter  *linuxAdapter
+	scanning bool
+	devices  map[dbus.ObjectPath]*linuxDevice
+	mu       sync.RWMutex
 }
 
 // linuxPeripheral implements Peripheral for Linux
 type linuxPeripheral struct {
-	adapter      *linuxAdapter
-	advertising  bool
-	services     map[dbus.ObjectPath]*linuxPeripheralService
-	mu           sync.RWMutex
+	adapter     *linuxAdapter
+	advertising bool
+	services    map[dbus.ObjectPath]*linuxPeripheralService
+	mu          sync.RWMutex
 }
 
 // linuxDevice implements Device for Linux
@@ -72,12 +72,12 @@ type linuxDevice struct {
 
 // linuxService implements Service for Linux
 type linuxService struct {
-	device         *linuxDevice
-	path           dbus.ObjectPath
-	uuid           UUID
-	properties     map[string]dbus.Variant
+	device          *linuxDevice
+	path            dbus.ObjectPath
+	uuid            UUID
+	properties      map[string]dbus.Variant
 	characteristics map[dbus.ObjectPath]*linuxCharacteristic
-	mu             sync.RWMutex
+	mu              sync.RWMutex
 }
 
 // linuxCharacteristic implements Characteristic for Linux
@@ -111,16 +111,16 @@ type linuxPeripheralService struct {
 
 // linuxPeripheralCharacteristic implements PeripheralCharacteristic for Linux
 type linuxPeripheralCharacteristic struct {
-	service    *linuxPeripheralService
-	path       dbus.ObjectPath
-	uuid       UUID
-	properties CharacteristicProperty
-	value      []byte
-	onRead     func() []byte
-	onWrite    func([]byte) error
-	onSubscribe func()
+	service       *linuxPeripheralService
+	path          dbus.ObjectPath
+	uuid          UUID
+	properties    CharacteristicProperty
+	value         []byte
+	onRead        func() []byte
+	onWrite       func([]byte) error
+	onSubscribe   func()
 	onUnsubscribe func()
-	mu         sync.RWMutex
+	mu            sync.RWMutex
 }
 
 // getPlatformManager returns the Linux implementation of Manager
@@ -144,7 +144,7 @@ func getPlatformManager() (Manager, error) {
 
 func (m *linuxManager) discoverAdapters() error {
 	obj := m.conn.Object(bluezService, bluezObjectPath)
-	
+
 	var objects map[dbus.ObjectPath]map[string]map[string]dbus.Variant
 	err := obj.Call("org.freedesktop.DBus.ObjectManager.GetManagedObjects", 0).Store(&objects)
 	if err != nil {
@@ -242,7 +242,7 @@ func (a *linuxAdapter) Name() string {
 
 func (a *linuxAdapter) SetName(name string) error {
 	propsIface, _ := prop.Export(a.manager.conn, a.path, prop.Map{})
-	
+
 	err := propsIface.Set(adapterInterface, "Name", dbus.MakeVariant(name))
 	if err != nil {
 		return fmt.Errorf("failed to set adapter name: %w", err)
@@ -269,7 +269,7 @@ func (a *linuxAdapter) PowerState() bool {
 
 func (a *linuxAdapter) SetPowerState(enabled bool) error {
 	propsIface, _ := prop.Export(a.manager.conn, a.path, prop.Map{})
-	
+
 	err := propsIface.Set(adapterInterface, "Powered", dbus.MakeVariant(enabled))
 	if err != nil {
 		return fmt.Errorf("failed to set power state: %w", err)
@@ -343,7 +343,7 @@ func (c *linuxCentral) monitorDeviceDiscovery(ctx context.Context, callback func
 
 func (c *linuxCentral) StopScan(ctx context.Context) error {
 	obj := c.adapter.manager.conn.Object(bluezService, c.adapter.path)
-	
+
 	err := obj.Call(adapterInterface+".StopDiscovery", 0).Err
 	if err != nil {
 		return fmt.Errorf("failed to stop discovery: %w", err)
@@ -359,9 +359,9 @@ func (c *linuxCentral) StopScan(ctx context.Context) error {
 func (c *linuxCentral) Connect(ctx context.Context, address Address, params ConnectionParams) (Device, error) {
 	// Find device by address
 	devicePath := dbus.ObjectPath(fmt.Sprintf("%s/dev_%s", c.adapter.path, strings.ReplaceAll(address.String(), ":", "_")))
-	
+
 	obj := c.adapter.manager.conn.Object(bluezService, devicePath)
-	
+
 	// Connect to device
 	call := obj.CallWithContext(ctx, deviceInterface+".Connect", 0)
 	if call.Err != nil {
@@ -459,7 +459,7 @@ func (d *linuxDevice) Connected() bool {
 
 func (d *linuxDevice) Disconnect(ctx context.Context) error {
 	obj := d.central.adapter.manager.conn.Object(bluezService, d.path)
-	
+
 	call := obj.CallWithContext(ctx, deviceInterface+".Disconnect", 0)
 	if call.Err != nil {
 		return fmt.Errorf("failed to disconnect device: %w", call.Err)
@@ -498,7 +498,7 @@ func (d *linuxDevice) GetService(uuid UUID) (Service, error) {
 func (d *linuxDevice) DiscoverServices(ctx context.Context, uuids []UUID) error {
 	// Discover GATT services via D-Bus
 	obj := d.central.adapter.manager.conn.Object(bluezService, d.path)
-	
+
 	call := obj.CallWithContext(ctx, deviceInterface+".Connect", 0)
 	if call.Err != nil {
 		return fmt.Errorf("failed to connect for service discovery: %w", call.Err)
@@ -523,7 +523,7 @@ func (d *linuxDevice) GetMTU() uint16 {
 func (s *linuxService) UUID() UUID {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	
+
 	if s.uuid.UUID != (uuid.UUID{}) {
 		return s.uuid
 	}
@@ -610,74 +610,74 @@ func (c *linuxCharacteristic) Properties() CharacteristicProperty {
 
 func (c *linuxCharacteristic) Read(ctx context.Context) ([]byte, error) {
 	obj := c.service.device.central.adapter.manager.conn.Object(bluezService, c.path)
-	
+
 	var value []byte
 	call := obj.CallWithContext(ctx, gattCharInterface+".ReadValue", 0, map[string]dbus.Variant{})
 	if call.Err != nil {
 		return nil, fmt.Errorf("failed to read characteristic: %w", call.Err)
 	}
-	
+
 	err := call.Store(&value)
 	if err != nil {
 		return nil, fmt.Errorf("failed to store read value: %w", err)
 	}
-	
+
 	return value, nil
 }
 
 func (c *linuxCharacteristic) Write(ctx context.Context, data []byte) error {
 	obj := c.service.device.central.adapter.manager.conn.Object(bluezService, c.path)
-	
+
 	call := obj.CallWithContext(ctx, gattCharInterface+".WriteValue", 0, data, map[string]dbus.Variant{})
 	if call.Err != nil {
 		return fmt.Errorf("failed to write characteristic: %w", call.Err)
 	}
-	
+
 	return nil
 }
 
 func (c *linuxCharacteristic) WriteWithoutResponse(ctx context.Context, data []byte) error {
 	obj := c.service.device.central.adapter.manager.conn.Object(bluezService, c.path)
-	
+
 	options := map[string]dbus.Variant{
 		"type": dbus.MakeVariant("command"),
 	}
-	
+
 	call := obj.CallWithContext(ctx, gattCharInterface+".WriteValue", 0, data, options)
 	if call.Err != nil {
 		return fmt.Errorf("failed to write characteristic without response: %w", call.Err)
 	}
-	
+
 	return nil
 }
 
 func (c *linuxCharacteristic) Subscribe(ctx context.Context, callback func([]byte)) error {
 	obj := c.service.device.central.adapter.manager.conn.Object(bluezService, c.path)
-	
+
 	call := obj.CallWithContext(ctx, gattCharInterface+".StartNotify", 0)
 	if call.Err != nil {
 		return fmt.Errorf("failed to start notifications: %w", call.Err)
 	}
-	
+
 	c.mu.Lock()
 	c.subscribed = true
 	c.mu.Unlock()
-	
+
 	return nil
 }
 
 func (c *linuxCharacteristic) Unsubscribe(ctx context.Context) error {
 	obj := c.service.device.central.adapter.manager.conn.Object(bluezService, c.path)
-	
+
 	call := obj.CallWithContext(ctx, gattCharInterface+".StopNotify", 0)
 	if call.Err != nil {
 		return fmt.Errorf("failed to stop notifications: %w", call.Err)
 	}
-	
+
 	c.mu.Lock()
 	c.subscribed = false
 	c.mu.Unlock()
-	
+
 	return nil
 }
 
@@ -709,29 +709,29 @@ func (d *linuxDescriptor) UUID() UUID {
 
 func (d *linuxDescriptor) Read(ctx context.Context) ([]byte, error) {
 	obj := d.characteristic.service.device.central.adapter.manager.conn.Object(bluezService, d.path)
-	
+
 	var value []byte
 	call := obj.CallWithContext(ctx, gattDescInterface+".ReadValue", 0, map[string]dbus.Variant{})
 	if call.Err != nil {
 		return nil, fmt.Errorf("failed to read descriptor: %w", call.Err)
 	}
-	
+
 	err := call.Store(&value)
 	if err != nil {
 		return nil, fmt.Errorf("failed to store descriptor value: %w", err)
 	}
-	
+
 	return value, nil
 }
 
 func (d *linuxDescriptor) Write(ctx context.Context, data []byte) error {
 	obj := d.characteristic.service.device.central.adapter.manager.conn.Object(bluezService, d.path)
-	
+
 	call := obj.CallWithContext(ctx, gattDescInterface+".WriteValue", 0, data, map[string]dbus.Variant{})
 	if call.Err != nil {
 		return fmt.Errorf("failed to write descriptor: %w", call.Err)
 	}
-	
+
 	return nil
 }
 
@@ -752,14 +752,14 @@ func (p *linuxPeripheral) AddService(uuid UUID, primary bool) (PeripheralService
 		primary:         primary,
 		characteristics: make(map[dbus.ObjectPath]*linuxPeripheralCharacteristic),
 	}
-	
+
 	servicePath := dbus.ObjectPath(fmt.Sprintf("/org/gobot/service_%s", strings.ReplaceAll(uuid.String(), "-", "_")))
 	service.path = servicePath
-	
+
 	p.mu.Lock()
 	p.services[servicePath] = service
 	p.mu.Unlock()
-	
+
 	return service, nil
 }
 
@@ -788,40 +788,40 @@ func (p *linuxPeripheral) Services() []PeripheralService {
 
 func (p *linuxPeripheral) StartAdvertising(ctx context.Context, params AdvertisingParams, data AdvertisementData) error {
 	obj := p.adapter.manager.conn.Object(bluezService, p.adapter.path)
-	
+
 	// Set discoverable and pairable
 	propsIface, _ := prop.Export(p.adapter.manager.conn, p.adapter.path, prop.Map{})
 	propsIface.Set(adapterInterface, "Discoverable", dbus.MakeVariant(params.Discoverable))
 	propsIface.Set(adapterInterface, "Pairable", dbus.MakeVariant(true))
-	
+
 	if data.LocalName != "" {
 		propsIface.Set(adapterInterface, "Alias", dbus.MakeVariant(data.LocalName))
 	}
-	
+
 	call := obj.CallWithContext(ctx, adapterInterface+".StartDiscovery", 0)
 	if call.Err != nil {
 		return fmt.Errorf("failed to start advertising: %w", call.Err)
 	}
-	
+
 	p.mu.Lock()
 	p.advertising = true
 	p.mu.Unlock()
-	
+
 	return nil
 }
 
 func (p *linuxPeripheral) StopAdvertising(ctx context.Context) error {
 	obj := p.adapter.manager.conn.Object(bluezService, p.adapter.path)
-	
+
 	call := obj.CallWithContext(ctx, adapterInterface+".StopDiscovery", 0)
 	if call.Err != nil {
 		return fmt.Errorf("failed to stop advertising: %w", call.Err)
 	}
-	
+
 	p.mu.Lock()
 	p.advertising = false
 	p.mu.Unlock()
-	
+
 	return nil
 }
 
@@ -860,14 +860,14 @@ func (s *linuxPeripheralService) AddCharacteristic(uuid UUID, properties Charact
 		value:      make([]byte, len(value)),
 	}
 	copy(char.value, value)
-	
+
 	charPath := dbus.ObjectPath(fmt.Sprintf("%s/char_%s", s.path, strings.ReplaceAll(uuid.String(), "-", "_")))
 	char.path = charPath
-	
+
 	s.mu.Lock()
 	s.characteristics[charPath] = char
 	s.mu.Unlock()
-	
+
 	return char, nil
 }
 
@@ -910,7 +910,7 @@ func (c *linuxPeripheralCharacteristic) Properties() CharacteristicProperty {
 func (c *linuxPeripheralCharacteristic) Value() []byte {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	
+
 	value := make([]byte, len(c.value))
 	copy(value, c.value)
 	return value
@@ -919,7 +919,7 @@ func (c *linuxPeripheralCharacteristic) Value() []byte {
 func (c *linuxPeripheralCharacteristic) SetValue(data []byte) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	
+
 	c.value = make([]byte, len(data))
 	copy(c.value, data)
 	return nil

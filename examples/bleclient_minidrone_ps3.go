@@ -29,9 +29,9 @@ import (
 	"time"
 
 	"gobot.io/x/gobot/v2"
-	"gobot.io/x/gobot/v2/pkg/drivers/ble/parrot"
-	"gobot.io/x/gobot/v2/pkg/platforms/bleclient"
-	"gobot.io/x/gobot/v2/pkg/platforms/joystick"
+	"gobot.io/x/gobot/v2/drivers/ble/parrot"
+	"gobot.io/x/gobot/v2/platforms/bleclient"
+	"gobot.io/x/gobot/v2/platforms/joystick"
 )
 
 type pair struct {

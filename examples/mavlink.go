@@ -10,8 +10,8 @@ import (
 	"fmt"
 
 	"gobot.io/x/gobot/v2"
-	"gobot.io/x/gobot/v2/pkg/platforms/mavlink"
-	common "gobot.io/x/gobot/v2/pkg/platforms/mavlink/common"
+	"gobot.io/x/gobot/v2/platforms/mavlink"
+	common "gobot.io/x/gobot/v2/platforms/mavlink/common"
 )
 
 func main() {

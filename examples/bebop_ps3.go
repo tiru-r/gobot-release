@@ -12,8 +12,8 @@ import (
 	"time"
 
 	"gobot.io/x/gobot/v2"
-	"gobot.io/x/gobot/v2/pkg/platforms/joystick"
-	"gobot.io/x/gobot/v2/pkg/platforms/parrot/bebop"
+	"gobot.io/x/gobot/v2/platforms/joystick"
+	"gobot.io/x/gobot/v2/platforms/parrot/bebop"
 )
 
 type pair struct {

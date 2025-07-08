@@ -11,9 +11,9 @@ import (
 	"time"
 
 	"gobot.io/x/gobot/v2"
-	"gobot.io/x/gobot/v2/pkg/drivers/aio"
-	"gobot.io/x/gobot/v2/pkg/drivers/i2c"
-	"gobot.io/x/gobot/v2/pkg/platforms/raspi"
+	"gobot.io/x/gobot/v2/drivers/aio"
+	"gobot.io/x/gobot/v2/drivers/i2c"
+	"gobot.io/x/gobot/v2/platforms/raspi"
 )
 
 func main() {

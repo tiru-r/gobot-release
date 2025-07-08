@@ -10,8 +10,8 @@ import (
 	"fmt"
 	"time"
 
-	"gobot.io/x/gobot/v2/pkg/drivers/gpio"
-	"gobot.io/x/gobot/v2/pkg/platforms/firmata"
+	"gobot.io/x/gobot/v2/drivers/gpio"
+	"gobot.io/x/gobot/v2/platforms/firmata"
 )
 
 // Example of a simple led toggle without the initialization of

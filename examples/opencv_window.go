@@ -8,7 +8,7 @@ package main
 
 import (
 	"gobot.io/x/gobot/v2"
-	"gobot.io/x/gobot/v2/pkg/platforms/opencv"
+	"gobot.io/x/gobot/v2/platforms/opencv"
 	"gocv.io/x/gocv"
 )
 

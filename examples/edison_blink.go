@@ -11,8 +11,8 @@ import (
 	"time"
 
 	"gobot.io/x/gobot/v2"
-	"gobot.io/x/gobot/v2/pkg/drivers/gpio"
-	"gobot.io/x/gobot/v2/pkg/platforms/intel-iot/edison"
+	"gobot.io/x/gobot/v2/drivers/gpio"
+	"gobot.io/x/gobot/v2/platforms/intel-iot/edison"
 )
 
 const boardType = "arduino" // "sparkfun" for a Sparkfun Edison board with the GPIO block

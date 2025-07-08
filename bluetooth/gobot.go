@@ -11,7 +11,7 @@ import (
 // Common errors following Gobot's simple error pattern
 var (
 	ErrBLENotConnected     = errors.New("not connected")
-	ErrBLENotFound         = errors.New("not found") 
+	ErrBLENotFound         = errors.New("not found")
 	ErrBLEInvalidUUID      = errors.New("invalid UUID")
 	ErrBLEScanTimeout      = errors.New("scan timeout")
 	ErrBLEConnectionFailed = errors.New("connection failed")
@@ -39,23 +39,23 @@ type BLEConnector interface {
 
 // ClientAdaptor implements a Bluetooth LE client following Gobot patterns
 type ClientAdaptor struct {
-	name                string
-	identifier          string // device address or name to connect to
-	scanTimeout         time.Duration
+	name                 string
+	identifier           string // device address or name to connect to
+	scanTimeout          time.Duration
 	sleepAfterDisconnect time.Duration
-	
+
 	// Internal state
-	connected        bool
-	deviceAddress    string
-	deviceName       string
-	characteristics  map[string]string // UUID -> value cache
-	
+	connected       bool
+	deviceAddress   string
+	deviceName      string
+	characteristics map[string]string // UUID -> value cache
+
 	// Configuration
 	withoutResponses bool
-	
+
 	// Synchronization
 	mutex sync.Mutex
-	
+
 	// For future platform implementations
 	platformAdapter any
 }
@@ -96,11 +96,11 @@ func NewClientAdaptor(identifier string, opts ...ClientAdaptorOption) *ClientAda
 		sleepAfterDisconnect: 500 * time.Millisecond,
 		characteristics:      make(map[string]string),
 	}
-	
+
 	for _, opt := range opts {
 		opt.apply(a)
 	}
-	
+
 	return a
 }
 
@@ -118,17 +118,17 @@ func (a *ClientAdaptor) SetName(name string) {
 func (a *ClientAdaptor) Connect() error {
 	a.mutex.Lock()
 	defer a.mutex.Unlock()
-	
+
 	if a.connected {
 		return nil
 	}
-	
+
 	// For now, simulate connection - in a real implementation this would:
 	// 1. Initialize platform-specific Bluetooth adapter
 	// 2. Scan for the device by identifier
 	// 3. Connect to the device
 	// 4. Discover services and characteristics
-	
+
 	// Mock successful connection
 	a.connected = true
 	a.deviceAddress = a.identifier
@@ -139,7 +139,7 @@ func (a *ClientAdaptor) Connect() error {
 		a.deviceName = a.identifier
 		a.deviceAddress = "00:00:00:00:00:00"
 	}
-	
+
 	return nil
 }
 
@@ -160,14 +160,14 @@ func (a *ClientAdaptor) Reconnect() error {
 func (a *ClientAdaptor) Disconnect() error {
 	a.mutex.Lock()
 	defer a.mutex.Unlock()
-	
+
 	if !a.connected {
 		return nil
 	}
-	
+
 	a.connected = false
 	time.Sleep(a.sleepAfterDisconnect)
-	
+
 	return nil
 }
 
@@ -175,7 +175,7 @@ func (a *ClientAdaptor) Disconnect() error {
 func (a *ClientAdaptor) Address() string {
 	a.mutex.Lock()
 	defer a.mutex.Unlock()
-	
+
 	if a.connected {
 		return a.deviceAddress
 	}
@@ -186,16 +186,16 @@ func (a *ClientAdaptor) Address() string {
 func (a *ClientAdaptor) ReadCharacteristic(cUUID string) ([]byte, error) {
 	a.mutex.Lock()
 	defer a.mutex.Unlock()
-	
+
 	if !a.connected {
 		return nil, ErrBLENotConnected
 	}
-	
+
 	uuid, err := normalizeUUID(cUUID)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	// In a real implementation, this would read from the actual characteristic
 	// For now, return mock data based on standard characteristics
 	switch uuid {
@@ -212,19 +212,19 @@ func (a *ClientAdaptor) ReadCharacteristic(cUUID string) ([]byte, error) {
 func (a *ClientAdaptor) WriteCharacteristic(cUUID string, data []byte) error {
 	a.mutex.Lock()
 	defer a.mutex.Unlock()
-	
+
 	if !a.connected {
 		return ErrBLENotConnected
 	}
-	
+
 	uuid, err := normalizeUUID(cUUID)
 	if err != nil {
 		return err
 	}
-	
+
 	// Cache the written value
 	a.characteristics[uuid] = string(data)
-	
+
 	// In a real implementation, this would write to the actual characteristic
 	return nil
 }
@@ -233,36 +233,36 @@ func (a *ClientAdaptor) WriteCharacteristic(cUUID string, data []byte) error {
 func (a *ClientAdaptor) Subscribe(cUUID string, callback func(data []byte)) error {
 	a.mutex.Lock()
 	defer a.mutex.Unlock()
-	
+
 	if !a.connected {
 		return ErrBLENotConnected
 	}
-	
+
 	_, err := normalizeUUID(cUUID)
 	if err != nil {
 		return err
 	}
-	
+
 	// In a real implementation, this would enable notifications
 	// For now, simulate periodic notifications
 	go func() {
 		ticker := time.NewTicker(1 * time.Second)
 		defer ticker.Stop()
-		
+
 		for range ticker.C {
 			a.mutex.Lock()
 			connected := a.connected
 			a.mutex.Unlock()
-			
+
 			if !connected {
 				break
 			}
-			
+
 			// Send mock notification data
 			callback([]byte("notification data"))
 		}
 	}()
-	
+
 	return nil
 }
 
@@ -286,7 +286,7 @@ func normalizeUUID(uuid string) (string, error) {
 		return uuid, nil
 	case 32:
 		// UUID without dashes - add them
-		return fmt.Sprintf("%s-%s-%s-%s-%s", 
+		return fmt.Sprintf("%s-%s-%s-%s-%s",
 			uuid[0:8], uuid[8:12], uuid[12:16], uuid[16:20], uuid[20:32]), nil
 	default:
 		return "", ErrBLEInvalidUUID
@@ -295,28 +295,28 @@ func normalizeUUID(uuid string) (string, error) {
 
 // isAddress checks if identifier looks like a MAC address
 func isAddress(identifier string) bool {
-	return len(identifier) == 17 && 
-		identifier[2] == ':' && identifier[5] == ':' && 
-		identifier[8] == ':' && identifier[11] == ':' && 
+	return len(identifier) == 17 &&
+		identifier[2] == ':' && identifier[5] == ':' &&
+		identifier[8] == ':' && identifier[11] == ':' &&
 		identifier[14] == ':'
 }
 
 // Standard Bluetooth UUIDs as simple constants (Gobot style)
 const (
 	// Standard Services
-	BatteryServiceUUID        = "180f"
-	DeviceInformationUUID     = "180a"
-	GenericAccessUUID         = "1800"
-	GenericAttributeUUID      = "1801"
-	HeartRateServiceUUID      = "180d"
-	
-	// Standard Characteristics  
-	BatteryLevelUUID          = "2a19"
-	DeviceNameUUID            = "2a00"
-	ManufacturerNameUUID      = "2a29"
-	ModelNumberUUID           = "2a24"
-	SerialNumberUUID          = "2a25"
-	HardwareRevisionUUID      = "2a27"
-	FirmwareRevisionUUID      = "2a26"
-	SoftwareRevisionUUID      = "2a28"
+	BatteryServiceUUID    = "180f"
+	DeviceInformationUUID = "180a"
+	GenericAccessUUID     = "1800"
+	GenericAttributeUUID  = "1801"
+	HeartRateServiceUUID  = "180d"
+
+	// Standard Characteristics
+	BatteryLevelUUID     = "2a19"
+	DeviceNameUUID       = "2a00"
+	ManufacturerNameUUID = "2a29"
+	ModelNumberUUID      = "2a24"
+	SerialNumberUUID     = "2a25"
+	HardwareRevisionUUID = "2a27"
+	FirmwareRevisionUUID = "2a26"
+	SoftwareRevisionUUID = "2a28"
 )

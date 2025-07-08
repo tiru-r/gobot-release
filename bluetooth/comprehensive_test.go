@@ -226,7 +226,7 @@ func TestAddress(t *testing.T) {
 // Test ConnectionParams defaults
 func TestDefaultConnectionParamsComprehensive(t *testing.T) {
 	params := DefaultConnectionParams()
-	
+
 	assert.Equal(t, 10*time.Second, params.ConnectionTimeout)
 	assert.Equal(t, 20*time.Millisecond, params.MinInterval)
 	assert.Equal(t, 40*time.Millisecond, params.MaxInterval)
@@ -237,7 +237,7 @@ func TestDefaultConnectionParamsComprehensive(t *testing.T) {
 // Test ScanParams defaults
 func TestDefaultScanParamsComprehensive(t *testing.T) {
 	params := DefaultScanParams()
-	
+
 	assert.Equal(t, 30*time.Second, params.Timeout)
 	assert.Equal(t, 100*time.Millisecond, params.Interval)
 	assert.Equal(t, 50*time.Millisecond, params.Window)
@@ -248,7 +248,7 @@ func TestDefaultScanParamsComprehensive(t *testing.T) {
 // Test AdvertisingParams defaults
 func TestDefaultAdvertisingParamsComprehensive(t *testing.T) {
 	params := DefaultAdvertisingParams()
-	
+
 	assert.Equal(t, 100*time.Millisecond, params.Interval)
 	assert.Equal(t, time.Duration(0), params.Timeout)
 	assert.True(t, params.Connectable)
@@ -259,7 +259,7 @@ func TestDefaultAdvertisingParamsComprehensive(t *testing.T) {
 // Test CharacteristicProperty flags
 func TestCharacteristicProperty(t *testing.T) {
 	props := CharacteristicRead | CharacteristicWrite | CharacteristicNotify
-	
+
 	assert.True(t, props&CharacteristicRead != 0)
 	assert.True(t, props&CharacteristicWrite != 0)
 	assert.True(t, props&CharacteristicNotify != 0)
@@ -270,24 +270,24 @@ func TestCharacteristicProperty(t *testing.T) {
 func TestConnectionManager(t *testing.T) {
 	cm, err := NewConnectionManager("12:34:56:78:9A:BC")
 	require.NoError(t, err)
-	
+
 	assert.Equal(t, "12:34:56:78:9A:BC", cm.targetAddress)
 	assert.Equal(t, 5, cm.maxReconnects)
 	assert.Equal(t, 2*time.Second, cm.reconnectDelay)
 	assert.False(t, cm.IsConnected())
-	
+
 	// Test reconnection params
 	cm.SetReconnectionParams(10, 5*time.Second)
 	assert.Equal(t, 10, cm.maxReconnects)
 	assert.Equal(t, 5*time.Second, cm.reconnectDelay)
-	
+
 	// Test callbacks
 	cm.SetCallbacks(
 		func(*SimpleDevice) {},
 		func() {},
 		func(error) {},
 	)
-	
+
 	assert.NotNil(t, cm.onConnected)
 	assert.NotNil(t, cm.onDisconnected)
 	assert.NotNil(t, cm.onError)
@@ -297,20 +297,20 @@ func TestConnectionManager(t *testing.T) {
 func TestExampleScanner(t *testing.T) {
 	scanner, err := NewExampleScanner()
 	require.NoError(t, err)
-	
+
 	assert.NotNil(t, scanner.manager)
 	assert.NotNil(t, scanner.devices)
 	assert.Equal(t, -100, scanner.rssiFilter)
-	
+
 	// Test filters
 	scanner.SetFilters("TestDevice", -50)
 	assert.Equal(t, "TestDevice", scanner.nameFilter)
 	assert.Equal(t, -50, scanner.rssiFilter)
-	
+
 	// Test device found callback
 	scanner.SetDeviceFoundCallback(func(*ScannedDevice) {})
 	assert.NotNil(t, scanner.onDeviceFound)
-	
+
 	// Test device handling
 	scanner.handleDeviceFound("12:34:56:78:9A:BC", "TestDevice", -30)
 	devices := scanner.GetDiscoveredDevices()
@@ -318,7 +318,7 @@ func TestExampleScanner(t *testing.T) {
 	assert.Equal(t, "12:34:56:78:9A:BC", devices[0].Address)
 	assert.Equal(t, "TestDevice", devices[0].Name)
 	assert.Equal(t, -30, devices[0].RSSI)
-	
+
 	// Test device filtering
 	scanner.SetFilters("OtherDevice", -20)
 	scanner.handleDeviceFound("12:34:56:78:9A:BD", "TestDevice", -40)
@@ -334,7 +334,7 @@ func TestExamplePeripheralServer(t *testing.T) {
 		"12345678-1234-1234-1234-123456789ABD",
 	)
 	require.NoError(t, err)
-	
+
 	assert.Equal(t, "TestService", server.serviceName)
 	assert.Equal(t, "12345678-1234-1234-1234-123456789ABC", server.serviceUUID)
 	assert.Equal(t, "12345678-1234-1234-1234-123456789ABD", server.charUUID)
@@ -352,7 +352,7 @@ func BenchmarkAddressString(b *testing.B) {
 	addr := Address{
 		MAC: [6]byte{0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC},
 	}
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		_ = addr.String()
@@ -364,7 +364,7 @@ func TestBluetoothIntegration(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping integration test in short mode")
 	}
-	
+
 	// These tests would require actual Bluetooth hardware
 	// In a real scenario, you might use a test harness with mock devices
 	t.Run("Manager Creation", func(t *testing.T) {
@@ -374,7 +374,7 @@ func TestBluetoothIntegration(t *testing.T) {
 			t.Skipf("Bluetooth not available: %v", err)
 		}
 	})
-	
+
 	t.Run("Simple Manager Creation", func(t *testing.T) {
 		// This would typically fail without Bluetooth hardware
 		_, err := NewSimpleManager()
@@ -406,7 +406,7 @@ func TestErrorConditions(t *testing.T) {
 			},
 		},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.name, tt.test)
 	}
@@ -416,10 +416,10 @@ func TestErrorConditions(t *testing.T) {
 func TestConcurrentAccess(t *testing.T) {
 	scanner, err := NewExampleScanner()
 	require.NoError(t, err)
-	
+
 	// Simulate concurrent device discoveries
 	done := make(chan bool)
-	
+
 	for i := 0; i < 10; i++ {
 		go func(id int) {
 			defer func() { done <- true }()
@@ -429,12 +429,12 @@ func TestConcurrentAccess(t *testing.T) {
 			}
 		}(i)
 	}
-	
+
 	// Wait for all goroutines to complete
 	for i := 0; i < 10; i++ {
 		<-done
 	}
-	
+
 	devices := scanner.GetDiscoveredDevices()
 	assert.True(t, len(devices) > 0)
 	t.Logf("Discovered %d devices concurrently", len(devices))
@@ -444,16 +444,16 @@ func TestConcurrentAccess(t *testing.T) {
 func TestMemoryUsage(t *testing.T) {
 	cm, err := NewConnectionManager("12:34:56:78:9A:BC")
 	require.NoError(t, err)
-	
+
 	ctx := context.Background()
-	
+
 	// Test that channels are properly closed
 	assert.NotNil(t, cm.stopCh)
-	
+
 	// Simulate disconnect to test cleanup
 	err = cm.Disconnect(ctx)
 	assert.NoError(t, err)
-	
+
 	// Verify cleanup
 	assert.False(t, cm.IsConnected())
 }

@@ -11,8 +11,8 @@ import (
 	"time"
 
 	"gobot.io/x/gobot/v2"
-	"gobot.io/x/gobot/v2/pkg/drivers/i2c"
-	"gobot.io/x/gobot/v2/pkg/platforms/digispark"
+	"gobot.io/x/gobot/v2/drivers/i2c"
+	"gobot.io/x/gobot/v2/platforms/digispark"
 )
 
 // Program use EEPROM with GPIO to rotate pins, get best experience, when

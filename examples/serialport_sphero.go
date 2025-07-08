@@ -13,8 +13,8 @@ import (
 
 	"gobot.io/x/gobot/v2"
 	"gobot.io/x/gobot/v2/pkg/drivers/common/spherocommon"
-	"gobot.io/x/gobot/v2/pkg/drivers/serial/sphero"
-	"gobot.io/x/gobot/v2/pkg/platforms/serialport"
+	"gobot.io/x/gobot/v2/drivers/serial/sphero"
+	"gobot.io/x/gobot/v2/platforms/serialport"
 )
 
 func main() {

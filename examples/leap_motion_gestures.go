@@ -10,7 +10,7 @@ import (
 	"fmt"
 
 	"gobot.io/x/gobot/v2"
-	"gobot.io/x/gobot/v2/pkg/platforms/leap"
+	"gobot.io/x/gobot/v2/platforms/leap"
 )
 
 func main() {

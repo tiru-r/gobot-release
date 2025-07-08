@@ -19,7 +19,7 @@ import (
 	"time"
 
 	"gobot.io/x/gobot/v2"
-	"gobot.io/x/gobot/v2/pkg/platforms/particle"
+	"gobot.io/x/gobot/v2/platforms/particle"
 )
 
 func main() {

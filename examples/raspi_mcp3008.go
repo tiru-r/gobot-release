@@ -11,8 +11,8 @@ import (
 	"time"
 
 	"gobot.io/x/gobot/v2"
-	"gobot.io/x/gobot/v2/pkg/drivers/spi"
-	"gobot.io/x/gobot/v2/pkg/platforms/raspi"
+	"gobot.io/x/gobot/v2/drivers/spi"
+	"gobot.io/x/gobot/v2/platforms/raspi"
 )
 
 func main() {
