@@ -1,0 +1,16 @@
+.sass-cache
+*.test
+*.swp
+*.snap
+profile.cov
+count.out
+/parts
+/prime
+/stage
+vendor/
+output/
+.idea/
+coverage.txt
+.chglog/chglog_tmp*.md
+.chglog/CHANGELOG.tpl*.md
+.chglog/config.yml

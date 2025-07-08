@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(go:*)",
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(CGO_ENABLED=0 go build -tags \"!gocv,!libusb\" ./...)",
+      "Bash(rm:*)",
+      "Bash(./build-pure-go.sh:*)",
+      "Bash(CGO_ENABLED=0 go test -tags \"!gocv,!libusb,!cgo\" ./platforms/digispark/ -v)",
+      "Bash(CGO_ENABLED=0 go build -tags \"!gocv,!libusb,!cgo\" ./platforms/digispark/)",
+      "Bash(CGO_ENABLED=0 go build -tags 'purgo' ./platforms/audio/...)",
+      "Bash(chmod:*)",
+      "Bash(/home/t/Documents/gobot-release/build-pure-go.sh:*)",
+      "Bash(CGO_ENABLED=0 go test -tags 'purgo' ./platforms/audio/ -v)",
+      "Bash(CGO_ENABLED=0 go run -tags 'purgo,example' /home/t/Documents/gobot-release/examples/audio_pure_go.go)",
+      "Bash(CGO_ENABLED=0 go build -tags '!gocv,!libusb,!cgo,purgo' ./...)",
+      "Bash(CGO_ENABLED=0 go build ./...)",
+      "Bash(mv:*)",
+      "Bash(mkdir:*)",
+      "Bash(ls:*)",
+      "Bash(cp:*)",
+      "Bash(true)",
+      "Bash(git checkout:*)",
+      "mcp__ide__getDiagnostics",
+      "Bash(rg:*)",
+      "WebFetch(domain:github.com)"
+    ],
+    "deny": []
+  }
+}
