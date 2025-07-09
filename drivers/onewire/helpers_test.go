@@ -2,6 +2,7 @@ package onewire
 
 import (
 	"errors"
+	"slices"
 	"sync"
 )
 
@@ -96,8 +97,7 @@ func (dm *oneWireSystemDeviceMock) ReadData(command string, data []byte) error {
 
 func (dm *oneWireSystemDeviceMock) WriteData(command string, data []byte) error {
 	dm.lastCommand = command
-	dm.lastData = make([]byte, len(data))
-	copy(dm.lastData, data)
+	dm.lastData = slices.Clone(data)
 
 	return dm.retErr
 }

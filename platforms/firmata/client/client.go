@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"math"
+	"slices"
 	"sync/atomic"
 	"time"
 
@@ -65,8 +66,8 @@ type Client struct {
 	pins            []Pin
 	FirmwareName    string
 	ProtocolVersion string
-	connecting      atomic.Value
-	connected       atomic.Value
+	connecting      atomic.Bool
+	connected       atomic.Bool
 	connection      io.ReadWriteCloser
 	analogPins      []int
 	ConnectTimeout  time.Duration
@@ -135,14 +136,12 @@ func (b *Client) Disconnect() error {
 
 // Connecting returns true when the client is connecting
 func (b *Client) Connecting() bool {
-	//nolint:forcetypeassert // ok here
-	return b.connecting.Load().(bool)
+	return b.connecting.Load()
 }
 
 // Connected returns the current connection state of the Client
 func (b *Client) Connected() bool {
-	//nolint:forcetypeassert // ok here
-	return b.connected.Load().(bool)
+	return b.connected.Load()
 }
 
 // Pins returns all available pins
@@ -269,7 +268,7 @@ func (b *Client) DigitalWrite(pin int, value int) error {
 
 	b.pins[pin].Value = value
 
-	for i := byte(0); i < 8; i++ {
+	for i := range byte(8) {
 		if b.pins[8*port+i].Value != 0 {
 			portValue = portValue | (1 << i)
 		}
@@ -425,7 +424,7 @@ func (b *Client) process() error {
 		port := messageType & 0x0F
 		portValue := buf[0] | (buf[1] << 7)
 
-		for i := 0; i < 8; i++ {
+		for i := range 8 {
 			pinNumber := int((8*port + byte(i)))
 			if len(b.pins) > pinNumber {
 				if b.pins[pinNumber].Mode == Input {
@@ -541,8 +540,7 @@ func (b *Client) process() error {
 			str := currentBuffer[2:]
 			b.Publish(b.Event("StringData"), string(str[:len(str)-1]))
 		default:
-			data := make([]byte, len(currentBuffer))
-			copy(data, currentBuffer)
+			data := slices.Clone(currentBuffer)
 			b.Publish("SysexResponse", data)
 		}
 	}

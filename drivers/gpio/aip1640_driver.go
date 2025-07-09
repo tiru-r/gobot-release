@@ -59,7 +59,7 @@ func (d *AIP1640Driver) SetIntensity(level byte) {
 
 // Display sends the buffer to the display (ie. turns on/off the corresponding LEDs)
 func (d *AIP1640Driver) Display() error {
-	for i := 0; i < 8; i++ {
+	for i := range 8 {
 		if err := d.sendData(byte(i), d.buffer[i]); err != nil {
 			return err
 		}
@@ -84,7 +84,7 @@ func (d *AIP1640Driver) Display() error {
 
 // Clear empties the buffer (turns off all the LEDs)
 func (d *AIP1640Driver) Clear() {
-	for i := 0; i < 8; i++ {
+	for i := range 8 {
 		d.buffer[i] = 0x00
 	}
 }
@@ -112,7 +112,7 @@ func (d *AIP1640Driver) DrawRow(row, data byte) {
 
 // DrawMatrix sets the whole buffer
 func (d *AIP1640Driver) DrawMatrix(data [8]byte) {
-	for i := 0; i < 8; i++ {
+	for i := range 8 {
 		d.buffer[7-i] = data[i]
 	}
 }
@@ -155,7 +155,7 @@ func (d *AIP1640Driver) sendData(address byte, data byte) error {
 
 // send writes data on the module
 func (d *AIP1640Driver) send(data byte) error {
-	for i := 0; i < 8; i++ {
+	for i := range 8 {
 		if err := d.pinClock.Off(); err != nil {
 			return err
 		}

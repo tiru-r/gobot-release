@@ -105,7 +105,8 @@ func TestDataStreaming(t *testing.T) {
 
 	for _, elem := range p1 {
 		var bytes []byte
-		for i := 0; i < len([]rune(elem)); i += 2 {
+		for i := range len([]rune(elem)) / 2 {
+			i *= 2
 			a := []rune(elem)[i : i+2]
 			b, err := strconv.ParseUint(string(a), 16, 16)
 			require.NoError(t, err)

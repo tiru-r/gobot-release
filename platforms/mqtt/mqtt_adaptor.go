@@ -76,7 +76,7 @@ func (m *message) Retained() bool  { return m.retained }
 type Client interface {
 	Connect() Token
 	Disconnect(quiesce uint)
-	Publish(topic string, qos byte, retained bool, payload interface{}) Token
+	Publish(topic string, qos byte, retained bool, payload any) Token
 	Subscribe(topic string, qos byte, callback func(Client, Message)) Token
 }
 
@@ -432,7 +432,7 @@ func (c *client) handlePublish(header byte, payload []byte) {
 }
 
 // Publish publishes a message
-func (c *client) Publish(topic string, qos byte, retained bool, payload interface{}) Token {
+func (c *client) Publish(topic string, qos byte, retained bool, payload any) Token {
 	token := newToken()
 	go func() {
 		c.mu.RLock()

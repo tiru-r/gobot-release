@@ -155,7 +155,7 @@ type mockManager struct {
 
 func (m *mockManager) DefaultAdapter() (Adapter, error) {
 	if len(m.adapters) == 0 {
-		return nil, ErrNotSupported
+		return nil, ErrOperationNotSupported
 	}
 	return m.adapters[0], nil
 }
@@ -194,7 +194,7 @@ func (c *mockCentral) Enable(ctx context.Context) error  { c.enabled = true; ret
 func (c *mockCentral) Disable(ctx context.Context) error { c.enabled = false; return nil }
 func (c *mockCentral) Scan(ctx context.Context, params ScanParams, callback func(Advertisement)) error {
 	if !c.enabled {
-		return ErrNotSupported
+		return ErrOperationNotSupported
 	}
 	c.scanning = true
 	// Simulate finding a device
@@ -211,7 +211,7 @@ func (c *mockCentral) Scan(ctx context.Context, params ScanParams, callback func
 func (c *mockCentral) StopScan(ctx context.Context) error { c.scanning = false; return nil }
 func (c *mockCentral) Connect(ctx context.Context, address Address, params ConnectionParams) (Device, error) {
 	if !c.enabled {
-		return nil, ErrNotSupported
+		return nil, ErrOperationNotSupported
 	}
 	device := &mockDevice{
 		central:   c,

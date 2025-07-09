@@ -215,9 +215,9 @@ func (s *SHT3xDriver) sendCommandDelayGetResponse(send []byte, delay *time.Durat
 // makeCRC8TableWithInit creates a CRC8 lookup table for the given polynomial with init value
 func makeCRC8TableWithInit(poly byte, init byte) []byte {
 	table := make([]byte, 256)
-	for i := 0; i < 256; i++ {
+	for i := range 256 {
 		crc := byte(i)
-		for j := 0; j < 8; j++ {
+		for range 8 {
 			if crc&0x80 != 0 {
 				crc = (crc << 1) ^ poly
 			} else {

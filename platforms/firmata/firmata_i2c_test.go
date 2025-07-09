@@ -229,7 +229,7 @@ func TestWriteBlockData(t *testing.T) {
 	reg := uint8(0x14)
 	val := []byte{}
 	// we prepare more than 32 bytes, because the call has to drop it
-	for i := uint8(0); i < 40; i++ {
+	for i := range uint8(40) {
 		val = append(val, i)
 	}
 	// act

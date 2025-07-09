@@ -86,7 +86,7 @@ func NewAdaptor(opts ...interface{}) *Adaptor {
 	}
 
 	a.pinMap = fixedPins
-	for i := 0; i < 122; i++ {
+	for i := range 122 {
 		pin := fmt.Sprintf("GPIO_%d", i)
 		a.pinMap[pin] = i
 	}

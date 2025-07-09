@@ -420,10 +420,10 @@ func TestConcurrentAccess(t *testing.T) {
 	// Simulate concurrent device discoveries
 	done := make(chan bool)
 
-	for i := 0; i < 10; i++ {
+	for i := range 10 {
 		go func(id int) {
 			defer func() { done <- true }()
-			for j := 0; j < 100; j++ {
+			for j := range 100 {
 				addr := fmt.Sprintf("12:34:56:78:9A:%02X", (id*100+j)%256)
 				scanner.handleDeviceFound(addr, fmt.Sprintf("Device%d", id), -50)
 			}
@@ -431,7 +431,7 @@ func TestConcurrentAccess(t *testing.T) {
 	}
 
 	// Wait for all goroutines to complete
-	for i := 0; i < 10; i++ {
+	for i := range 10 {
 		<-done
 	}
 

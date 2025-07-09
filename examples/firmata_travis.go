@@ -14,6 +14,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -66,7 +67,19 @@ func checkTravis(robot *gobot.Robot) {
 	// name := "broken-arrow"
 	fmt.Printf("Checking repo %s/%s\n", user, name)
 	turnOn(robot, "blue")
-	resp, err := http.Get(fmt.Sprintf("https://api.travis-ci.org/repos/%s/%s.json", user, name))
+	
+	client := &http.Client{
+		Timeout: 10 * time.Second,
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	
+	req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("https://api.travis-ci.org/repos/%s/%s.json", user, name), nil)
+	if err != nil {
+		panic(err)
+	}
+	
+	resp, err := client.Do(req)
 	if err != nil {
 		panic(err)
 	}

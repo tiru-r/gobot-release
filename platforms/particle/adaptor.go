@@ -11,6 +11,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 
 	"gobot.io/x/gobot/v2"
 )
@@ -22,6 +23,7 @@ type Adaptor struct {
 	AccessToken string
 	APIServer   string
 	servoPins   map[string]bool
+	client      *http.Client
 	gobot.Eventer
 }
 
@@ -58,7 +60,9 @@ var eventSource = func(url string) (chan *SSEEvent, chan error, error) {
 	req.Header.Set("Accept", "text/event-stream")
 	req.Header.Set("Cache-Control", "no-cache")
 
-	client := &http.Client{}
+	client := &http.Client{
+		Timeout: 30 * time.Second,
+	}
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, nil, err
@@ -126,6 +130,9 @@ func NewAdaptor(deviceID string, accessToken string) *Adaptor {
 		AccessToken: accessToken,
 		servoPins:   make(map[string]bool),
 		APIServer:   "https://api.particle.io",
+		client: &http.Client{
+			Timeout: 30 * time.Second,
+		},
 		Eventer:     gobot.NewEventer(),
 	}
 }
@@ -330,20 +337,33 @@ func (s *Adaptor) pinLevel(level byte) string {
 
 // request makes request to Particle cloud server, return err != nil if there is
 // any issue with the request.
-//
-//nolint:bodyclose,noctx // not changed yet
 func (s *Adaptor) request(method string, url string, params url.Values) (map[string]interface{}, error) {
-	var resp *http.Response
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	
+	var req *http.Request
 	var err error
+	
 	if method == "POST" {
-		resp, err = http.PostForm(url, params) //nolint:gosec // accepted, because local function and no exposed routing
+		req, err = http.NewRequestWithContext(ctx, "POST", url, strings.NewReader(params.Encode()))
+		if err != nil {
+			return nil, err
+		}
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	} else if method == "GET" {
-		resp, err = http.Get(url) //nolint:gosec // accepted, because local function and no exposed routing
+		req, err = http.NewRequestWithContext(ctx, "GET", url, nil)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		return nil, fmt.Errorf("unsupported HTTP method: %s", method)
 	}
-
+	
+	resp, err := s.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
 
 	buf, err := io.ReadAll(resp.Body)
 	if err != nil {

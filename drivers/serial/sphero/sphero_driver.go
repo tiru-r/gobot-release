@@ -374,7 +374,7 @@ func (d *SpheroDriver) handleDataStreaming(data []uint8) {
 
 func (d *SpheroDriver) getSyncResponse(packet *packet) []byte {
 	d.packetChannel <- packet
-	for i := 0; i < 500; i++ {
+	for range 500 {
 		for key := range d.syncResponse {
 			if d.syncResponse[key][3] == packet.header[4] && len(d.syncResponse[key]) > 6 {
 				var response []byte

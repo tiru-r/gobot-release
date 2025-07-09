@@ -735,7 +735,7 @@ func (b *Bebop) createARStreamACK(frame ARStreamFrame) *bytes.Buffer {
 			if emit {
 				skip := false
 
-				for i := 0; i < len(b.tmpFrame.fragments); i++ {
+				for i := range b.tmpFrame.fragments {
 					// check if any fragments are missing
 					if len(b.tmpFrame.fragments[i]) == 0 {
 						skip = true

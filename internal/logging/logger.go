@@ -7,7 +7,9 @@ import (
 	"log"
 	"os"
 	"runtime"
+	"slices"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -229,6 +231,8 @@ func (l *Logger) writeEntry(entry LogEntry) {
 			for k, v := range entry.Fields {
 				parts = append(parts, fmt.Sprintf("%s=%v", k, v))
 			}
+			// Use slices.Sort for better performance
+			slices.Sort(parts)
 			fieldsStr = " " + strings.Join(parts, " ")
 		}
 
@@ -261,12 +265,17 @@ func getCaller(skip int) string {
 	return fmt.Sprintf("%s:%d", file, line)
 }
 
-// Global logger instance
-var defaultLogger = NewDefaultLogger()
+// Global logger instance using sync.OnceValue for thread-safe initialization
+var defaultLogger = sync.OnceValue(func() *Logger {
+	return NewDefaultLogger()
+})
 
 // Configure configures the default logger
 func Configure(level LogLevel, format LogFormat, output io.Writer) {
-	defaultLogger = NewLogger(level, format, output)
+	// Since we're using sync.OnceValue, we need to reinitialize
+	defaultLogger = sync.OnceValue(func() *Logger {
+		return NewLogger(level, format, output)
+	})
 }
 
 // ConfigureFromString configures the default logger from string parameters
@@ -304,53 +313,53 @@ func ConfigureFromString(levelStr, formatStr, outputStr string) error {
 
 // Debug logs a debug message using the default logger
 func Debug(message string, fields ...map[string]interface{}) {
-	defaultLogger.Debug(message, fields...)
+	defaultLogger().Debug(message, fields...)
 }
 
 // Debugf logs a formatted debug message using the default logger
 func Debugf(format string, args ...interface{}) {
-	defaultLogger.Debugf(format, args...)
+	defaultLogger().Debugf(format, args...)
 }
 
 // Info logs an informational message using the default logger
 func Info(message string, fields ...map[string]interface{}) {
-	defaultLogger.Info(message, fields...)
+	defaultLogger().Info(message, fields...)
 }
 
 // Infof logs a formatted informational message using the default logger
 func Infof(format string, args ...interface{}) {
-	defaultLogger.Infof(format, args...)
+	defaultLogger().Infof(format, args...)
 }
 
 // Warn logs a warning message using the default logger
 func Warn(message string, fields ...map[string]interface{}) {
-	defaultLogger.Warn(message, fields...)
+	defaultLogger().Warn(message, fields...)
 }
 
 // Warnf logs a formatted warning message using the default logger
 func Warnf(format string, args ...interface{}) {
-	defaultLogger.Warnf(format, args...)
+	defaultLogger().Warnf(format, args...)
 }
 
 // Error logs an error message using the default logger
 func Error(message string, fields ...map[string]interface{}) {
-	defaultLogger.Error(message, fields...)
+	defaultLogger().Error(message, fields...)
 }
 
 // Errorf logs a formatted error message using the default logger
 func Errorf(format string, args ...interface{}) {
-	defaultLogger.Errorf(format, args...)
+	defaultLogger().Errorf(format, args...)
 }
 
 // GetLogger returns a logger with the specified component name
 func GetLogger(component string) *Logger {
-	return defaultLogger.WithComponent(component)
+	return defaultLogger().WithComponent(component)
 }
 
 // Compatibility with standard log package
 func init() {
 	// Redirect standard log package to our logger
-	log.SetOutput(&logWrapper{logger: defaultLogger})
+	log.SetOutput(&logWrapper{logger: defaultLogger()})
 	log.SetFlags(0) // Disable standard log formatting since we handle it
 }
 

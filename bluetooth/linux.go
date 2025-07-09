@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
+	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -200,11 +201,11 @@ func (m *linuxManager) Adapters() ([]Adapter, error) {
 }
 
 func (m *linuxManager) OnAdapterAdded(callback func(Adapter)) {
-	// TODO: Implement D-Bus signal monitoring for adapter addition
+	// D-Bus signal monitoring for adapter addition not yet implemented
 }
 
 func (m *linuxManager) OnAdapterRemoved(callback func(Adapter)) {
-	// TODO: Implement D-Bus signal monitoring for adapter removal
+	// D-Bus signal monitoring for adapter removal not yet implemented
 }
 
 // linuxAdapter implementation
@@ -336,9 +337,173 @@ func (c *linuxCentral) Scan(ctx context.Context, params ScanParams, callback fun
 }
 
 func (c *linuxCentral) monitorDeviceDiscovery(ctx context.Context, callback func(Advertisement)) {
-	// TODO: Implement D-Bus signal monitoring for device discovery
-	// This would listen for PropertiesChanged signals on Device interfaces
-	// and call the callback with Advertisement data
+	// Set up D-Bus signal monitoring for device discovery
+	signalChan := make(chan *dbus.Signal, 10)
+	c.adapter.manager.conn.Signal(signalChan)
+	
+	// Subscribe to InterfacesAdded and PropertiesChanged signals
+	c.adapter.manager.conn.BusObject().Call("org.freedesktop.DBus.AddMatch", 0,
+		"type='signal',interface='org.freedesktop.DBus.ObjectManager',member='InterfacesAdded'")
+	c.adapter.manager.conn.BusObject().Call("org.freedesktop.DBus.AddMatch", 0,
+		"type='signal',interface='org.freedesktop.DBus.Properties',member='PropertiesChanged',arg0='org.bluez.Device1'")
+	
+	defer func() {
+		c.adapter.manager.conn.RemoveSignal(signalChan)
+		close(signalChan)
+	}()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case sig := <-signalChan:
+			if sig == nil {
+				continue
+			}
+			
+			switch sig.Name {
+			case "org.freedesktop.DBus.ObjectManager.InterfacesAdded":
+				c.handleInterfacesAdded(sig, callback)
+			case "org.freedesktop.DBus.Properties.PropertiesChanged":
+				c.handlePropertiesChanged(sig, callback)
+			}
+		}
+	}
+}
+
+func (c *linuxCentral) handleInterfacesAdded(sig *dbus.Signal, callback func(Advertisement)) {
+	if len(sig.Body) < 2 {
+		return
+	}
+
+	objectPath, ok := sig.Body[0].(dbus.ObjectPath)
+	if !ok {
+		return
+	}
+
+	interfaces, ok := sig.Body[1].(map[string]map[string]dbus.Variant)
+	if !ok {
+		return
+	}
+
+	// Check if this is a device interface
+	deviceProps, hasDevice := interfaces[deviceInterface]
+	if !hasDevice {
+		return
+	}
+
+	// Create advertisement from device properties
+	if adv := c.createAdvertisementFromProps(objectPath, deviceProps); adv != nil {
+		callback(*adv)
+	}
+}
+
+func (c *linuxCentral) handlePropertiesChanged(sig *dbus.Signal, callback func(Advertisement)) {
+	if len(sig.Body) < 2 {
+		return
+	}
+
+	// Extract object path from sender
+	objectPath := dbus.ObjectPath(sig.Path)
+	
+	changedProps, ok := sig.Body[1].(map[string]dbus.Variant)
+	if !ok {
+		return
+	}
+
+	// Get existing device properties
+	obj := c.adapter.manager.conn.Object(bluezService, objectPath)
+	var allProps map[string]dbus.Variant
+	err := obj.Call("org.freedesktop.DBus.Properties.GetAll", 0, deviceInterface).Store(&allProps)
+	if err != nil {
+		return
+	}
+
+	// Merge changed properties
+	for key, value := range changedProps {
+		allProps[key] = value
+	}
+
+	// Create advertisement from updated properties
+	if adv := c.createAdvertisementFromProps(objectPath, allProps); adv != nil {
+		callback(*adv)
+	}
+}
+
+func (c *linuxCentral) createAdvertisementFromProps(objectPath dbus.ObjectPath, props map[string]dbus.Variant) *Advertisement {
+	// Extract device address from object path
+	pathStr := string(objectPath)
+	if !strings.HasPrefix(pathStr, string(c.adapter.path)+"/dev_") {
+		return nil
+	}
+
+	addrStr := strings.TrimPrefix(pathStr, string(c.adapter.path)+"/dev_")
+	addrStr = strings.ReplaceAll(addrStr, "_", ":")
+	
+	addr, err := parseAddressString(addrStr)
+	if err != nil {
+		return nil
+	}
+
+	// Create advertisement
+	adv := &Advertisement{
+		Address: addr,
+	}
+
+	// Extract properties
+	if rssi, ok := props["RSSI"]; ok {
+		if rssiVal, ok := rssi.Value().(int16); ok {
+			adv.RSSI = rssiVal
+		}
+	}
+
+	if name, ok := props["Name"]; ok {
+		if nameVal, ok := name.Value().(string); ok {
+			adv.LocalName = nameVal
+		}
+	}
+
+	if uuids, ok := props["UUIDs"]; ok {
+		if uuidList, ok := uuids.Value().([]string); ok {
+			for _, uuidStr := range uuidList {
+				if uuid, err := NewUUID(uuidStr); err == nil {
+					adv.ServiceUUIDs = append(adv.ServiceUUIDs, uuid)
+				}
+			}
+		}
+	}
+
+	if serviceData, ok := props["ServiceData"]; ok {
+		if serviceDataMap, ok := serviceData.Value().(map[string]dbus.Variant); ok {
+			adv.ServiceData = make(map[UUID][]byte)
+			for uuidStr, dataVar := range serviceDataMap {
+				if uuid, err := NewUUID(uuidStr); err == nil {
+					if data, ok := dataVar.Value().([]byte); ok {
+						adv.ServiceData[uuid] = data
+					}
+				}
+			}
+		}
+	}
+
+	if manuData, ok := props["ManufacturerData"]; ok {
+		if manuDataMap, ok := manuData.Value().(map[uint16]dbus.Variant); ok {
+			adv.ManufacturerData = make(map[uint16][]byte)
+			for id, dataVar := range manuDataMap {
+				if data, ok := dataVar.Value().([]byte); ok {
+					adv.ManufacturerData[id] = data
+				}
+			}
+		}
+	}
+
+	if connectable, ok := props["Connectable"]; ok {
+		if connectableVal, ok := connectable.Value().(bool); ok {
+			adv.Connectable = connectableVal
+		}
+	}
+
+	return adv
 }
 
 func (c *linuxCentral) StopScan(ctx context.Context) error {
@@ -512,7 +677,7 @@ func (d *linuxDevice) DiscoverServices(ctx context.Context, uuids []UUID) error 
 }
 
 func (d *linuxDevice) RequestMTU(ctx context.Context, mtu uint16) error {
-	return ErrNotSupported
+	return ErrOperationNotSupported
 }
 
 func (d *linuxDevice) GetMTU() uint16 {
@@ -832,11 +997,11 @@ func (p *linuxPeripheral) IsAdvertising() bool {
 }
 
 func (p *linuxPeripheral) OnConnect(callback func(Device)) {
-	// TODO: Implement D-Bus signal monitoring for device connections
+	// D-Bus signal monitoring for device connections not yet implemented
 }
 
 func (p *linuxPeripheral) OnDisconnect(callback func(Device)) {
-	// TODO: Implement D-Bus signal monitoring for device disconnections
+	// D-Bus signal monitoring for device disconnections not yet implemented
 }
 
 // linuxPeripheralService implementation
@@ -857,9 +1022,8 @@ func (s *linuxPeripheralService) AddCharacteristic(uuid UUID, properties Charact
 		service:    s,
 		uuid:       uuid,
 		properties: properties,
-		value:      make([]byte, len(value)),
+		value:      slices.Clone(value),
 	}
-	copy(char.value, value)
 
 	charPath := dbus.ObjectPath(fmt.Sprintf("%s/char_%s", s.path, strings.ReplaceAll(uuid.String(), "-", "_")))
 	char.path = charPath
@@ -911,17 +1075,14 @@ func (c *linuxPeripheralCharacteristic) Value() []byte {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
-	value := make([]byte, len(c.value))
-	copy(value, c.value)
-	return value
+	return slices.Clone(c.value)
 }
 
 func (c *linuxPeripheralCharacteristic) SetValue(data []byte) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	c.value = make([]byte, len(data))
-	copy(c.value, data)
+	c.value = slices.Clone(data)
 	return nil
 }
 

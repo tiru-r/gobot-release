@@ -1,6 +1,7 @@
 package i2c
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"strconv"
@@ -163,22 +164,22 @@ func (d *Adafruit1109Driver) Start() error {
 // Halt implements the gobot.Device interface.
 func (d *Adafruit1109Driver) Halt() error {
 	// we try halt on each device, not stopping on the first error
-	var errors []string
+	var errs []error
 
 	if err := d.HD44780Driver.Halt(); err != nil {
-		errors = append(errors, err.Error())
+		errs = append(errs, err)
 	}
 	// switch off the background light
 	if err := d.SetRGB(false, false, false); err != nil {
-		errors = append(errors, err.Error())
+		errs = append(errs, err)
 	}
 	// must be after HD44780Driver
 	if err := d.MCP23017Driver.Halt(); err != nil {
-		errors = append(errors, err.Error())
+		errs = append(errs, err)
 	}
 
-	if len(errors) > 0 {
-		return fmt.Errorf("Halt the driver %s", strings.Join(errors, ", "))
+	if len(errs) > 0 {
+		return errors.Join(errs...)
 	}
 
 	return nil

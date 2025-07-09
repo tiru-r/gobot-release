@@ -71,7 +71,7 @@ func (d *IOPinDriver) ReadPinADConfig() (int, error) {
 		return 0, err
 	}
 	var result byte
-	for i := 0; i < 4; i++ {
+	for i := range 4 {
 		result |= c[i] << uint(i) //nolint:gosec // ok here
 	}
 
@@ -99,7 +99,7 @@ func (d *IOPinDriver) ReadPinIOConfig() (int, error) {
 	}
 
 	var result byte
-	for i := 0; i < 4; i++ {
+	for i := range 4 {
 		result |= c[i] << uint(i) //nolint:gosec // ok here
 	}
 

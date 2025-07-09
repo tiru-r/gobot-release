@@ -7,6 +7,7 @@ import (
 )
 
 func TestDefault(t *testing.T) {
+	t.Parallel()
 	config := Default()
 	
 	if config.LogLevel != "info" {
@@ -23,6 +24,7 @@ func TestDefault(t *testing.T) {
 }
 
 func TestValidate(t *testing.T) {
+	t.Parallel()
 	config := Default()
 	
 	// Valid config should pass

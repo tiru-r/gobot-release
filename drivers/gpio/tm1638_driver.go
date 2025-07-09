@@ -137,7 +137,7 @@ func (d *TM1638Driver) initialize() error {
 	if err := d.send(TM1638AddrCmd); err != nil {
 		return err
 	}
-	for i := 0; i < 16; i++ {
+	for range 16 {
 		if err := d.send(TM1638WriteDisp); err != nil {
 			return err
 		}
@@ -189,7 +189,7 @@ func (d *TM1638Driver) sendCommand(cmd byte) error {
 
 // send writes data on the module
 func (d *TM1638Driver) send(data byte) error {
-	for i := 0; i < 8; i++ {
+	for range 8 {
 		if err := d.pinClock.Off(); err != nil {
 			return err
 		}

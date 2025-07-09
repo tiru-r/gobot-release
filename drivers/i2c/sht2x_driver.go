@@ -221,9 +221,9 @@ func (d *SHT2xDriver) sendAccuracy() error {
 // makeCRC8Table creates a CRC8 lookup table for the given polynomial
 func makeCRC8Table(poly byte) []byte {
 	table := make([]byte, 256)
-	for i := 0; i < 256; i++ {
+	for i := range 256 {
 		crc := byte(i)
-		for j := 0; j < 8; j++ {
+		for range 8 {
 			if crc&0x80 != 0 {
 				crc = (crc << 1) ^ poly
 			} else {

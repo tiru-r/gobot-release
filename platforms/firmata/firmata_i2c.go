@@ -155,9 +155,7 @@ func (c *firmataI2cConnection) WriteBlockData(reg uint8, data []byte) error {
 		data = data[:32]
 	}
 
-	buf := make([]byte, len(data)+1)
-	copy(buf[1:], data)
-	buf[0] = reg
+	buf := append([]byte{reg}, data...)
 	return c.writeAndCheckCount(buf)
 }
 

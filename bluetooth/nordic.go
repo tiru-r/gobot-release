@@ -451,7 +451,7 @@ func nordic_scan_callback_bridge(addr *C.uint8_t, addrType C.uint8_t, rssi C.int
 
 	// Convert C data to Go types
 	var address Address
-	for i := 0; i < 6; i++ {
+	for i := range 6 {
 		address.MAC[i] = *(*byte)(unsafe.Pointer(uintptr(unsafe.Pointer(addr)) + uintptr(i)))
 	}
 	address.IsRandom = addrType != 0
@@ -459,7 +459,7 @@ func nordic_scan_callback_bridge(addr *C.uint8_t, addrType C.uint8_t, rssi C.int
 	advertisement := Advertisement{
 		Address: address,
 		RSSI:    int16(rssi),
-		// TODO: Parse advertising data for local name, service UUIDs, etc.
+		// Advertising data parsing not yet implemented
 	}
 
 	manager.adapter.central.scanCallback(advertisement)
@@ -481,7 +481,7 @@ func nordic_connect_callback_bridge(connHandle C.uint16_t, peerAddr *C.uint8_t) 
 
 	// Find device by address and update connection handle
 	var deviceAddr Address
-	for i := 0; i < 6; i++ {
+	for i := range 6 {
 		deviceAddr.MAC[i] = *(*byte)(unsafe.Pointer(uintptr(unsafe.Pointer(peerAddr)) + uintptr(i)))
 	}
 

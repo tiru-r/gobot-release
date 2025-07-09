@@ -443,7 +443,7 @@ func (d *ADS1x15Driver) checkChannel(channel int) error {
 func (d *ADS1x15Driver) waitForConversionFinished(delay time.Duration) error {
 	start := time.Now()
 
-	for i := 0; i < ads1x15WaitMaxCount; i++ {
+	for i := range ads1x15WaitMaxCount {
 		if i == ads1x15WaitMaxCount-1 {
 			// most likely the last try will also not finish, so we stop with an error
 			return fmt.Errorf("The conversion is not finished within %s", time.Since(start))
@@ -487,13 +487,13 @@ func (d *ADS1x15Driver) readWordBigEndian(reg uint8) (uint16, error) {
 }
 
 func (d *ADS1x15Driver) setChannelDataRates(ddr int) {
-	for i := 0; i <= 3; i++ {
+	for i := range 4 {
 		d.channelCfgs[i].dataRate = ddr
 	}
 }
 
 func (d *ADS1x15Driver) setChannelGains(gain int) {
-	for i := 0; i <= 3; i++ {
+	for i := range 4 {
 		d.channelCfgs[i].gain = gain
 	}
 }

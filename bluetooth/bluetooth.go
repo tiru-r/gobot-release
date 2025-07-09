@@ -4,23 +4,12 @@ package bluetooth
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
 	"github.com/google/uuid"
 )
 
-// Common errors
-var (
-	ErrNotSupported           = errors.New("operation not supported on this platform")
-	ErrNotConnected           = errors.New("device not connected")
-	ErrInvalidUUID            = errors.New("invalid UUID format")
-	ErrCharacteristicNotFound = errors.New("characteristic not found")
-	ErrServiceNotFound        = errors.New("service not found")
-	ErrScanTimeout            = errors.New("scan timeout")
-	ErrConnectionFailed       = errors.New("connection failed")
-)
 
 // Address represents a Bluetooth device address
 type Address struct {
@@ -33,17 +22,58 @@ func (a Address) String() string {
 		a.MAC[5], a.MAC[4], a.MAC[3], a.MAC[2], a.MAC[1], a.MAC[0])
 }
 
+// NewAddress creates a new Address from a MAC address string with validation
+func NewAddress(mac string) (Address, error) {
+	if err := ValidateAddressString(mac); err != nil {
+		return Address{}, err
+	}
+
+	addr, err := parseAddressString(mac)
+	if err != nil {
+		return Address{}, NewBluetoothErrorWithCode(ErrorCodeInvalidAddress, "failed to parse address").WithCause(err)
+	}
+
+	if err := ValidateAddress(addr); err != nil {
+		return Address{}, err
+	}
+
+	return addr, nil
+}
+
 // UUID represents a Bluetooth UUID (16-bit, 32-bit, or 128-bit)
 type UUID struct {
 	uuid.UUID
 }
 
-// NewUUID creates a new UUID from string
+// NewUUID creates a new UUID from string with validation
 func NewUUID(s string) (UUID, error) {
-	u, err := uuid.Parse(s)
-	if err != nil {
-		return UUID{}, ErrInvalidUUID
+	// Validate the UUID string format first
+	if err := ValidateUUIDString(s); err != nil {
+		return UUID{}, err
 	}
+
+	// Handle different UUID formats
+	var fullUUIDString string
+	switch len(s) {
+	case 4:
+		// 16-bit UUID: Convert to full 128-bit UUID
+		fullUUIDString = fmt.Sprintf("0000%s-0000-1000-8000-00805f9b34fb", s)
+	case 32:
+		// 32-character UUID without dashes: add dashes
+		fullUUIDString = fmt.Sprintf("%s-%s-%s-%s-%s",
+			s[0:8], s[8:12], s[12:16], s[16:20], s[20:32])
+	case 36:
+		// Full UUID with dashes
+		fullUUIDString = s
+	default:
+		return UUID{}, NewValidationErrorBT("uuid", s, "invalid length")
+	}
+
+	u, err := uuid.Parse(fullUUIDString)
+	if err != nil {
+		return UUID{}, NewBluetoothErrorWithCode(ErrorCodeInvalidUUID, "failed to parse UUID").WithCause(err)
+	}
+	
 	return UUID{UUID: u}, nil
 }
 
@@ -79,6 +109,11 @@ func DefaultConnectionParams() ConnectionParams {
 	}
 }
 
+// Validate validates the connection parameters
+func (cp ConnectionParams) Validate() error {
+	return ValidateConnectionParams(cp)
+}
+
 // ScanParams defines scanning parameters
 type ScanParams struct {
 	Timeout          time.Duration
@@ -99,6 +134,11 @@ func DefaultScanParams() ScanParams {
 	}
 }
 
+// Validate validates the scan parameters
+func (sp ScanParams) Validate() error {
+	return ValidateScanParams(sp)
+}
+
 // AdvertisingParams defines advertising parameters
 type AdvertisingParams struct {
 	Interval     time.Duration
@@ -117,6 +157,11 @@ func DefaultAdvertisingParams() AdvertisingParams {
 		Discoverable: true,
 		TxPower:      nil, // use default
 	}
+}
+
+// Validate validates the advertising parameters
+func (ap AdvertisingParams) Validate() error {
+	return ValidateAdvertisingParams(ap)
 }
 
 // CharacteristicProperty defines characteristic properties

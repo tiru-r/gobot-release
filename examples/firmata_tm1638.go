@@ -70,7 +70,7 @@ func main() {
 			}
 
 			// Scroll the text
-			for i := 0; i < 4; i++ {
+			for i := range 4 {
 				if err := modules[i].SetDisplayText(text[offset+8*i : offset+8*i+8]); err != nil {
 					fmt.Println(err)
 				}

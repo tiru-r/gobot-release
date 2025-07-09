@@ -6,6 +6,17 @@ package cbridge
 /*
 #cgo CFLAGS: -x objective-c
 #cgo LDFLAGS: -framework Foundation -framework CoreBluetooth
+#cgo noescape CBTCentral_StartScan
+#cgo noescape CBTCentral_StopScan
+#cgo noescape CBTCentral_Connect
+#cgo noescape CBTDevice_GetName
+#cgo noescape CBTDevice_GetIdentifier
+#cgo noescape CBTDevice_IsConnected
+#cgo noescape CBTDevice_DiscoverServices
+#cgo nocallback CBTCentral_Enable
+#cgo nocallback CBTCentral_Disable
+#cgo nocallback CBTPeripheral_Enable
+#cgo nocallback CBTPeripheral_Disable
 #import <Foundation/Foundation.h>
 #import <CoreBluetooth/CoreBluetooth.h>
 
@@ -404,10 +415,15 @@ import (
 // GLOBAL CALLBACK MANAGEMENT
 // ============================================================================
 
+// DarwinDevice represents a device in the Darwin implementation
+type DarwinDevice struct {
+	cDevice unsafe.Pointer
+}
+
 var (
 	// Global callback maps to handle C callbacks
-	scanCallbacks       = make(map[unsafe.Pointer]func(interface{}))
-	connectionCallbacks = make(map[unsafe.Pointer]func(interface{}))
+	scanCallbacks       = make(map[unsafe.Pointer]func(Advertisement))
+	connectionCallbacks = make(map[unsafe.Pointer]func(*DarwinDevice))
 	callbackMutex       sync.RWMutex
 )
 
@@ -417,12 +433,48 @@ var (
 
 //export scanResultCallbackBridge
 func scanResultCallbackBridge(userData unsafe.Pointer, identifier *C.char, name *C.char, rssi C.int) {
-	// This will be implemented in the central manager
+	callbackMutex.RLock()
+	callback, exists := scanCallbacks[userData]
+	callbackMutex.RUnlock()
+
+	if exists && callback != nil {
+		// Convert C strings to Go strings
+		identifierStr := C.GoString(identifier)
+		nameStr := ""
+		if name != nil {
+			nameStr = C.GoString(name)
+		}
+
+		// Create advertisement data
+		address, err := parseAddressString(identifierStr)
+		if err != nil {
+			return // Skip invalid addresses
+		}
+
+		advertisement := Advertisement{
+			Address:   address,
+			RSSI:      int16(rssi),
+			LocalName: nameStr,
+		}
+
+		// Call the Go callback
+		callback(advertisement)
+	}
 }
 
 //export connectionCallbackBridge
 func connectionCallbackBridge(userData unsafe.Pointer, cDevice unsafe.Pointer) {
-	// Handle connection events
+	callbackMutex.RLock()
+	callback, exists := connectionCallbacks[userData]
+	callbackMutex.RUnlock()
+
+	if exists && callback != nil {
+		// Create device representation
+		device := &DarwinDevice{
+			cDevice: cDevice,
+		}
+		callback(device)
+	}
 }
 
 //export disconnectionCallbackBridge
@@ -634,4 +686,36 @@ func AddCharacteristic(service, characteristic unsafe.Pointer) error {
 func SendNotification(characteristic unsafe.Pointer, data []byte) error {
 	// Implementation would be added here
 	return nil
+}
+
+// ============================================================================
+// CALLBACK REGISTRATION FUNCTIONS
+// ============================================================================
+
+// RegisterScanCallback registers a scan result callback
+func RegisterScanCallback(userData unsafe.Pointer, callback func(Advertisement)) {
+	callbackMutex.Lock()
+	defer callbackMutex.Unlock()
+	scanCallbacks[userData] = callback
+}
+
+// UnregisterScanCallback unregisters a scan result callback
+func UnregisterScanCallback(userData unsafe.Pointer) {
+	callbackMutex.Lock()
+	defer callbackMutex.Unlock()
+	delete(scanCallbacks, userData)
+}
+
+// RegisterConnectionCallback registers a connection callback
+func RegisterConnectionCallback(userData unsafe.Pointer, callback func(*DarwinDevice)) {
+	callbackMutex.Lock()
+	defer callbackMutex.Unlock()
+	connectionCallbacks[userData] = callback
+}
+
+// UnregisterConnectionCallback unregisters a connection callback
+func UnregisterConnectionCallback(userData unsafe.Pointer) {
+	callbackMutex.Lock()
+	defer callbackMutex.Unlock()
+	delete(connectionCallbacks, userData)
 }

@@ -173,11 +173,11 @@ func (m *windowsManager) Adapters() ([]Adapter, error) {
 }
 
 func (m *windowsManager) OnAdapterAdded(callback func(Adapter)) {
-	// TODO: Implement radio state change monitoring
+	// WinRT radio state change monitoring not yet implemented
 }
 
 func (m *windowsManager) OnAdapterRemoved(callback func(Adapter)) {
-	// TODO: Implement radio state change monitoring
+	// WinRT radio state change monitoring not yet implemented
 }
 
 // windowsAdapter implementation
@@ -315,7 +315,7 @@ func (c *windowsCentral) handleAdvertisementReceived(args *advertisement.Bluetoo
 
 	// Convert Windows address format to our Address type
 	addr := Address{}
-	for i := 0; i < 6; i++ {
+	for i := range 6 {
 		addr.MAC[i] = byte(bluetoothAddress >> (8 * i))
 	}
 
@@ -347,7 +347,7 @@ func (c *windowsCentral) StopScan(ctx context.Context) error {
 func (c *windowsCentral) Connect(ctx context.Context, address Address, params ConnectionParams) (Device, error) {
 	// Convert address to Windows format
 	var bluetoothAddress uint64
-	for i := 0; i < 6; i++ {
+	for i := range 6 {
 		bluetoothAddress |= uint64(address.MAC[i]) << (8 * i)
 	}
 

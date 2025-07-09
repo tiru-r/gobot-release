@@ -37,7 +37,7 @@ func (bta *btTestAdapter) Scan(ctx context.Context, params bluetooth.ScanParams,
 	var addr bluetooth.Address
 	// Simple parsing for test address like "12:34:56:78:9A:BC"
 	if len(bta.deviceAddress) == 17 {
-		for i := 0; i < 6; i++ {
+		for i := range 6 {
 			byteStr := bta.deviceAddress[i*3 : i*3+2]
 			val := 0
 			for _, c := range byteStr {

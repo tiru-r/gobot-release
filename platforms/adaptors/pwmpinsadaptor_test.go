@@ -464,7 +464,7 @@ func TestPWMPinConcurrency(t *testing.T) {
 		require.NoError(t, a.Connect())
 		var wg sync.WaitGroup
 
-		for i := 0; i < 20; i++ {
+		for i := range 20 {
 			wg.Add(1)
 			pinAsString := strconv.Itoa(i)
 			go func(pin string) {

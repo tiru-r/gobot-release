@@ -2,6 +2,7 @@ package config
 
 import (
 	"os"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -89,12 +90,12 @@ func (c *Config) Validate() error {
 	}
 
 	validLogLevels := []string{"debug", "info", "warn", "error"}
-	if !contains(validLogLevels, strings.ToLower(c.LogLevel)) {
+	if !slices.Contains(validLogLevels, strings.ToLower(c.LogLevel)) {
 		return &ConfigError{Field: "LogLevel", Reason: "must be one of: debug, info, warn, error"}
 	}
 
 	validLogFormats := []string{"text", "json"}
-	if !contains(validLogFormats, strings.ToLower(c.LogFormat)) {
+	if !slices.Contains(validLogFormats, strings.ToLower(c.LogFormat)) {
 		return &ConfigError{Field: "LogFormat", Reason: "must be one of: text, json"}
 	}
 
@@ -155,11 +156,3 @@ func getEnvDuration(key string, defaultValue time.Duration) time.Duration {
 	return defaultValue
 }
 
-func contains(slice []string, item string) bool {
-	for _, s := range slice {
-		if s == item {
-			return true
-		}
-	}
-	return false
-}

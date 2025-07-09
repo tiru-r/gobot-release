@@ -1,9 +1,9 @@
 package i2c
 
 import (
+	"errors"
 	"fmt"
 	"log"
-	"strings"
 	"time"
 
 	"gobot.io/x/gobot/v2"
@@ -212,28 +212,28 @@ func (y *YL40Driver) Start() error {
 // Halt stops the driver
 func (y *YL40Driver) Halt() error {
 	// we try halt on each device, not stopping on the first error
-	var errors []string
+	var errs []error
 	if err := y.aBri.Halt(); err != nil {
-		errors = append(errors, err.Error())
+		errs = append(errs, err)
 	}
 	if err := y.aTemp.Halt(); err != nil {
-		errors = append(errors, err.Error())
+		errs = append(errs, err)
 	}
 	if err := y.aAIN2.Halt(); err != nil {
-		errors = append(errors, err.Error())
+		errs = append(errs, err)
 	}
 	if err := y.aPoti.Halt(); err != nil {
-		errors = append(errors, err.Error())
+		errs = append(errs, err)
 	}
 	if err := y.aOut.Halt(); err != nil {
-		errors = append(errors, err.Error())
+		errs = append(errs, err)
 	}
 	// must be the last one
 	if err := y.PCF8591Driver.Halt(); err != nil {
-		errors = append(errors, err.Error())
+		errs = append(errs, err)
 	}
-	if len(errors) > 0 {
-		return fmt.Errorf("Halt the driver %s", strings.Join(errors, ", "))
+	if len(errs) > 0 {
+		return errors.Join(errs...)
 	}
 	return nil
 }

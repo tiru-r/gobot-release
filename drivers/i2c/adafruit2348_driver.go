@@ -76,7 +76,7 @@ type Adafruit2348Driver struct {
 func NewAdafruit2348Driver(c Connector, options ...func(Config)) *Adafruit2348Driver {
 	var dc []adafruit2348DCMotor
 	var st []adafruit2348StepperMotor
-	for i := 0; i < 4; i++ {
+	for i := range 4 {
 		switch {
 		case i == 0:
 			dc = append(dc, adafruit2348DCMotor{pwmPin: 8, in1Pin: 10, in2Pin: 9})

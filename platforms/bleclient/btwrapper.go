@@ -59,23 +59,20 @@ func newBtAdapter(a bluetoothExtAdapterer, debug bool) *btAdapter {
 
 // Enable configures the BLE stack. It must be called before any Bluetooth-related calls (unless otherwise indicated).
 // It pass through the function of the external implementation.
-func (bta *btAdapter) enable() error {
-	ctx := context.Background()
+func (bta *btAdapter) enable(ctx context.Context) error {
 	return bta.extAdapter.Enable(ctx)
 }
 
 // StopScan stops any in-progress scan. It can be called from within a Scan callback to stop the current scan.
 // If no scan is in progress, an error will be returned.
-func (bta *btAdapter) stopScan() error {
-	ctx := context.Background()
+func (bta *btAdapter) stopScan(ctx context.Context) error {
 	return bta.extAdapter.StopScan(ctx)
 }
 
 // Connect starts a connection attempt to the given peripheral device address.
 //
 // On Linux and Windows, the IsRandom part of the address is ignored.
-func (bta *btAdapter) connect(address bluetooth.Address, devName string) (*btDevice, error) {
-	ctx := context.Background()
+func (bta *btAdapter) connect(ctx context.Context, address bluetooth.Address, devName string) (*btDevice, error) {
 	extDev, err := bta.extAdapter.Connect(ctx, address, bluetooth.DefaultConnectionParams())
 	if err != nil {
 		return nil, err
@@ -85,11 +82,11 @@ func (bta *btAdapter) connect(address bluetooth.Address, devName string) (*btDev
 }
 
 // Scan starts a BLE scan for the given identifier (address or name).
-func (bta *btAdapter) scan(identifier string, scanTimeout time.Duration) (*bluetooth.Advertisement, error) {
+func (bta *btAdapter) scan(ctx context.Context, identifier string, scanTimeout time.Duration) (*bluetooth.Advertisement, error) {
 	resultChan := make(chan bluetooth.Advertisement, 1)
 	errChan := make(chan error)
 
-	ctx, cancel := context.WithTimeout(context.Background(), scanTimeout)
+	scanCtx, cancel := context.WithTimeout(ctx, scanTimeout)
 	defer cancel()
 
 	go func() {
@@ -106,7 +103,7 @@ func (bta *btAdapter) scan(identifier string, scanTimeout time.Duration) (*bluet
 			}
 		}
 		
-		err := bta.extAdapter.Scan(ctx, params, callback)
+		err := bta.extAdapter.Scan(scanCtx, params, callback)
 		if err != nil {
 			errChan <- err
 		}
@@ -114,14 +111,14 @@ func (bta *btAdapter) scan(identifier string, scanTimeout time.Duration) (*bluet
 
 	select {
 	case result := <-resultChan:
-		if err := bta.stopScan(); err != nil {
+		if err := bta.stopScan(ctx); err != nil {
 			return nil, err
 		}
 		return &result, nil
 	case err := <-errChan:
 		return nil, err
-	case <-ctx.Done():
-		_ = bta.stopScan()
+	case <-scanCtx.Done():
+		_ = bta.stopScan(ctx)
 		return nil, fmt.Errorf("scan timeout (%s) elapsed", scanTimeout)
 	}
 }
@@ -142,8 +139,7 @@ func (btd *btDevice) name() string { return btd.devName }
 
 func (btd *btDevice) address() string { return btd.devAddress }
 
-func (btd *btDevice) discoverServices(uuids []bluetooth.UUID) ([]bluetooth.Service, error) {
-	ctx := context.Background()
+func (btd *btDevice) discoverServices(ctx context.Context, uuids []bluetooth.UUID) ([]bluetooth.Service, error) {
 	err := btd.extDevice.DiscoverServices(ctx, uuids)
 	if err != nil {
 		return nil, err
@@ -152,22 +148,18 @@ func (btd *btDevice) discoverServices(uuids []bluetooth.UUID) ([]bluetooth.Servi
 }
 
 // Disconnect from the BLE device. This method is non-blocking and does not wait until the connection is fully gone.
-func (btd *btDevice) disconnect() error {
-	ctx := context.Background()
+func (btd *btDevice) disconnect(ctx context.Context) error {
 	return btd.extDevice.Disconnect(ctx)
 }
 
-func readFromCharacteristic(chara bluetoothExtCharacteristicer) ([]byte, error) {
-	ctx := context.Background()
+func readFromCharacteristic(ctx context.Context, chara bluetoothExtCharacteristicer) ([]byte, error) {
 	return chara.Read(ctx)
 }
 
-func writeToCharacteristicWithoutResponse(chara bluetoothExtCharacteristicer, data []byte) error {
-	ctx := context.Background()
+func writeToCharacteristicWithoutResponse(ctx context.Context, chara bluetoothExtCharacteristicer, data []byte) error {
 	return chara.WriteWithoutResponse(ctx, data)
 }
 
-func enableNotificationsForCharacteristic(chara bluetoothExtCharacteristicer, f func(data []byte)) error {
-	ctx := context.Background()
+func enableNotificationsForCharacteristic(ctx context.Context, chara bluetoothExtCharacteristicer, f func(data []byte)) error {
 	return chara.Subscribe(ctx, f)
 }

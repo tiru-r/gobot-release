@@ -26,7 +26,7 @@ func TestNewADS1115Driver(t *testing.T) {
 	}
 	assert.NotNil(t, d.Driver)
 	assert.True(t, strings.HasPrefix(d.Name(), "ADS1115"))
-	for i := 0; i <= 3; i++ {
+	for i := range 4 {
 		assert.Equal(t, 1, d.channelCfgs[i].gain)
 		assert.Equal(t, 128, d.channelCfgs[i].dataRate)
 	}
@@ -37,7 +37,7 @@ func TestADS1115Options(t *testing.T) {
 	// least one of this driver. Further tests for options can also be done by call of "WithOption(val)(d)".
 	d := NewADS1115Driver(newI2cTestAdaptor(), WithBus(2), WithADS1x15Gain(2), WithADS1x15DataRate(860))
 	assert.Equal(t, 2, d.GetBusOrDefault(1))
-	for i := 0; i <= 3; i++ {
+	for i := range 4 {
 		assert.Equal(t, 2, d.channelCfgs[i].gain)
 		assert.Equal(t, 860, d.channelCfgs[i].dataRate)
 	}
@@ -46,7 +46,7 @@ func TestADS1115Options(t *testing.T) {
 func TestADS1115WithADS1x15BestGainForVoltage(t *testing.T) {
 	d, _ := initTestADS1115DriverWithStubbedAdaptor()
 	WithADS1x15BestGainForVoltage(1.01)(d)
-	for i := 0; i <= 3; i++ {
+	for i := range 4 {
 		assert.Equal(t, 3, d.channelCfgs[i].gain)
 	}
 }

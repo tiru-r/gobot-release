@@ -28,7 +28,8 @@
       "Bash(touch:*)",
       "Bash(GOOS=windows go build -v ./...)",
       "Bash(GOOS=darwin go build -v ./...)",
-      "Bash(/dev/null)"
+      "Bash(/dev/null)",
+      "WebFetch(domain:go.dev)"
     ],
     "deny": []
   }

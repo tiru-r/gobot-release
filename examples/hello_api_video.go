@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"slices"
 	"sync"
 
 	"gobot.io/x/gobot/v2"
@@ -32,8 +33,7 @@ func NewMJPEGStream() *MJPEGStream {
 func (s *MJPEGStream) UpdateJPEG(data []byte) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	s.current = make([]byte, len(data))
-	copy(s.current, data)
+	s.current = slices.Clone(data)
 }
 
 // ServeHTTP implements http.Handler for serving MJPEG stream
@@ -44,8 +44,7 @@ func (s *MJPEGStream) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	for {
 		s.mu.RLock()
-		frame := make([]byte, len(s.current))
-		copy(frame, s.current)
+		frame := slices.Clone(s.current)
 		s.mu.RUnlock()
 
 		if len(frame) > 0 {

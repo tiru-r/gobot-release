@@ -1,10 +1,12 @@
 package core
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
 	"os/signal"
+	"slices"
 	"sync"
 	"sync/atomic"
 
@@ -114,7 +116,7 @@ func (m *Manager) Stop() error {
 	}
 
 	if len(errs) > 0 {
-		return fmt.Errorf("errors during stop: %v", errs)
+		return errors.Join(errs...)
 	}
 
 	log.Println("Manager stopped")
@@ -146,9 +148,7 @@ func (m *Manager) Robot(name string) interfaces.Robot {
 func (m *Manager) Robots() []interfaces.Robot {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
-	robots := make([]interfaces.Robot, len(m.robots))
-	copy(robots, m.robots)
-	return robots
+	return slices.Clone(m.robots)
 }
 
 // IsRunning returns true if the manager is running.

@@ -56,7 +56,7 @@ func NewAdaptor(opts ...interface{}) *Adaptor {
 
 	a.pinMap = chipPins
 	baseAddr, _ := getXIOBase()
-	for i := 0; i < 8; i++ {
+	for i := range 8 {
 		pin := fmt.Sprintf("XIO-P%d", i)
 		a.pinMap[pin] = sysfsPin{pin: baseAddr + i, pwmPin: -1}
 	}

@@ -77,17 +77,49 @@ func (sm *SimpleManager) ScanForDevices(ctx context.Context, timeout time.Durati
 	})
 }
 
-// ConnectToDevice connects to a device by address
+// ConnectToDevice connects to a device by address with proper error handling and validation
 func (sm *SimpleManager) ConnectToDevice(ctx context.Context, address string) (*SimpleDevice, error) {
-	addr, err := parseAddressString(address)
-	if err != nil {
-		return nil, fmt.Errorf("invalid address format: %w", err)
+	// Validate input parameters
+	if err := ValidateContext("connect"); err != nil {
+		return nil, err
 	}
 
-	central := sm.adapter.Central()
-	device, err := central.Connect(ctx, addr, DefaultConnectionParams())
+	// Parse and validate address
+	addr, err := NewAddress(address)
 	if err != nil {
-		return nil, fmt.Errorf("failed to connect to device: %w", err)
+		return nil, NewBluetoothErrorWithCode(ErrorCodeInvalidAddress, "invalid device address").WithCause(err)
+	}
+
+	// Get connection parameters and validate them
+	params := DefaultConnectionParams()
+	if err := params.Validate(); err != nil {
+		return nil, err
+	}
+
+	// Use the central manager to connect with retry logic
+	central := sm.adapter.Central()
+	
+	var device Device
+	connectOperation := func() error {
+		var err error
+		device, err = central.Connect(ctx, addr, params)
+		if err != nil {
+			return WrapError(err, ErrorCodeConnectionFailed, "failed to connect to device")
+		}
+		return nil
+	}
+
+	// Retry connection with exponential backoff
+	err = RetryWithBackoff(connectOperation, DefaultRetryConfig())
+	if err != nil {
+		return nil, err
+	}
+
+	// Create connection resource for lifecycle management
+	connResource := NewConnectionResource(device)
+	if err := GetResourceManager().Register(connResource); err != nil {
+		// Log warning but don't fail connection
+		fmt.Printf("Warning: failed to register connection resource: %v\n", err)
 	}
 
 	return &SimpleDevice{device: device}, nil
@@ -344,7 +376,7 @@ func parseAddressString(addrStr string) (Address, error) {
 	}
 
 	var addr Address
-	for i := 0; i < 6; i++ {
+	for i := range 6 {
 		byteStr := addrStr[i*3 : i*3+2]
 		if i < 5 && addrStr[i*3+2] != ':' {
 			return Address{}, fmt.Errorf("invalid address format")

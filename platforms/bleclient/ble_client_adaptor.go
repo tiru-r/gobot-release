@@ -1,6 +1,7 @@
 package bleclient
 
 import (
+	"context"
 	"fmt"
 	"sync"
 	"time"
@@ -103,6 +104,7 @@ func (a *Adaptor) Connect() error {
 	a.mutex.Lock()
 	defer a.mutex.Unlock()
 
+	ctx := context.Background()
 	var err error
 
 	if a.cfg.debug {
@@ -128,7 +130,7 @@ func (a *Adaptor) Connect() error {
 			central := adapter.Central()
 			a.btAdpt = a.btAdptCreator(central, a.cfg.debug)
 		}
-		if err := a.btAdpt.enable(); err != nil {
+		if err := a.btAdpt.enable(ctx); err != nil {
 			return fmt.Errorf("can't enable adapter: %w", err)
 		}
 	}
@@ -137,7 +139,7 @@ func (a *Adaptor) Connect() error {
 		fmt.Printf("[Connect]: scan %s for the identifier '%s'...\n", a.cfg.scanTimeout, a.identifier)
 	}
 
-	result, err := a.btAdpt.scan(a.identifier, a.cfg.scanTimeout)
+	result, err := a.btAdpt.scan(ctx, a.identifier, a.cfg.scanTimeout)
 	if err != nil {
 		return err
 	}
@@ -146,7 +148,7 @@ func (a *Adaptor) Connect() error {
 		fmt.Printf("[Connect]: connect to peripheral device with address %s...\n", result.Address.String())
 	}
 
-	dev, err := a.btAdpt.connect(result.Address, result.LocalName)
+	dev, err := a.btAdpt.connect(ctx, result.Address, result.LocalName)
 	if err != nil {
 		return err
 	}
@@ -157,7 +159,7 @@ func (a *Adaptor) Connect() error {
 	if a.cfg.debug {
 		fmt.Println("[Connect]: get all services/characteristics...")
 	}
-	services, err := a.btDevice.discoverServices(nil)
+	services, err := a.btDevice.discoverServices(ctx, nil)
 	if err != nil {
 		return err
 	}
@@ -197,7 +199,8 @@ func (a *Adaptor) Disconnect() error {
 	if a.cfg.debug {
 		fmt.Println("[Disconnect]: disconnect...")
 	}
-	err := a.btDevice.disconnect()
+	ctx := context.Background()
+	err := a.btDevice.disconnect(ctx)
 	time.Sleep(a.cfg.sleepAfterDisconnect)
 	a.connected = false
 	if a.cfg.debug {
@@ -224,7 +227,8 @@ func (a *Adaptor) ReadCharacteristic(cUUID string) ([]byte, error) {
 	}
 
 	if chara, ok := a.characteristics[cUUID]; ok {
-		return readFromCharacteristic(chara)
+		ctx := context.Background()
+		return readFromCharacteristic(ctx, chara)
 	}
 
 	return nil, fmt.Errorf("unknown characteristic: %s", cUUID)
@@ -243,7 +247,8 @@ func (a *Adaptor) WriteCharacteristic(cUUID string, data []byte) error {
 	}
 
 	if chara, ok := a.characteristics[cUUID]; ok {
-		return writeToCharacteristicWithoutResponse(chara, data)
+		ctx := context.Background()
+		return writeToCharacteristicWithoutResponse(ctx, chara, data)
 	}
 
 	return fmt.Errorf("unknown characteristic: %s", cUUID)
@@ -262,7 +267,8 @@ func (a *Adaptor) Subscribe(cUUID string, f func(data []byte)) error {
 	}
 
 	if chara, ok := a.characteristics[cUUID]; ok {
-		return enableNotificationsForCharacteristic(chara, f)
+		ctx := context.Background()
+		return enableNotificationsForCharacteristic(ctx, chara, f)
 	}
 
 	return fmt.Errorf("unknown characteristic: %s", cUUID)

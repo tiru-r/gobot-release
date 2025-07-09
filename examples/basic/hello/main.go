@@ -12,7 +12,7 @@ func main() {
 	robot := core.NewRobot(
 		core.WithName("HelloBot"),
 		core.WithWork(func() {
-			for i := 0; i < 5; i++ {
+			for i := range 5 {
 				fmt.Printf("Hello from Gobot! Count: %d\n", i+1)
 				time.Sleep(1 * time.Second)
 			}

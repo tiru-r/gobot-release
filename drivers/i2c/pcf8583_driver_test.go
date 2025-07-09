@@ -89,7 +89,7 @@ func TestPCF8583CommandsReadTime(t *testing.T) {
 	a.i2cReadImpl = func(b []byte) (int, error) {
 		numCallsRead++
 		rr := returnRead[numCallsRead-1]
-		for i := 0; i < len(b); i++ {
+		for i := range b {
 			b[i] = rr[i]
 		}
 		return len(b), nil
@@ -140,7 +140,7 @@ func TestPCF8583CommandsReadCounter(t *testing.T) {
 	a.i2cReadImpl = func(b []byte) (int, error) {
 		numCallsRead++
 		rr := returnRead[numCallsRead-1]
-		for i := 0; i < len(b); i++ {
+		for i := range b {
 			b[i] = rr[i]
 		}
 		return len(b), nil
@@ -287,7 +287,7 @@ func TestPCF8583ReadTime(t *testing.T) {
 	a.i2cReadImpl = func(b []byte) (int, error) {
 		numCallsRead++
 		rr := returnRead[numCallsRead-1]
-		for i := 0; i < len(b); i++ {
+		for i := range b {
 			b[i] = rr[i]
 		}
 		return len(b), nil
@@ -425,7 +425,7 @@ func TestPCF8583ReadCounter(t *testing.T) {
 	a.i2cReadImpl = func(b []byte) (int, error) {
 		numCallsRead++
 		rr := returnRead[numCallsRead-1]
-		for i := 0; i < len(b); i++ {
+		for i := range b {
 			b[i] = rr[i]
 		}
 		return len(b), nil

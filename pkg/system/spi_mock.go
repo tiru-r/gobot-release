@@ -2,6 +2,7 @@ package system
 
 import (
 	"fmt"
+	"slices"
 
 	"gobot.io/x/gobot/v2"
 )
@@ -63,8 +64,7 @@ func (spi *MockSpiAccess) SetCloseError(val bool) {
 
 // SetSimRead is used to set the byte stream for next read.
 func (spi *MockSpiAccess) SetSimRead(data []byte) {
-	spi.sysdev.simRead = make([]byte, len(data))
-	copy(spi.sysdev.simRead, data)
+	spi.sysdev.simRead = slices.Clone(data)
 }
 
 // Written returns the byte stream which was last written.
