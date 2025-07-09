@@ -155,7 +155,7 @@ func (d *AIP1640Driver) sendData(address byte, data byte) error {
 
 // send writes data on the module
 func (d *AIP1640Driver) send(data byte) error {
-	for i := range 8 {
+	for range 8 {
 		if err := d.pinClock.Off(); err != nil {
 			return err
 		}

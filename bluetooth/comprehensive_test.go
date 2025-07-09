@@ -431,7 +431,7 @@ func TestConcurrentAccess(t *testing.T) {
 	}
 
 	// Wait for all goroutines to complete
-	for i := range 10 {
+	for range 10 {
 		<-done
 	}
 
