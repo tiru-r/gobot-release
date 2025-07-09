@@ -107,11 +107,10 @@ func (p *piBlasterPWMPin) SetDutyCycle(dutyNanos uint32) error {
 
 func (p *piBlasterPWMPin) writeValue(data string) error {
 	fi, err := p.sys.OpenFile(piBlasterPath, os.O_WRONLY|os.O_APPEND, 0o644)
-	defer fi.Close() //nolint:staticcheck // for historical reasons
-
 	if err != nil {
 		return err
 	}
+	defer fi.Close() //nolint:staticcheck // for historical reasons
 
 	_, err = fi.WriteString(data)
 	return err
